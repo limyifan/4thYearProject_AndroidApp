@@ -69,10 +69,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         setContentView(R.layout.activity_maps);
 
-        pb = (ProgressBar) findViewById(R.id.progressBar1);
-        pb.setVisibility(View.INVISIBLE);
-
-        editLocation = (EditText) findViewById(R.id.editTextLocation);
+//        pb = (ProgressBar) findViewById(R.id.progressBar1);
+//        pb.setVisibility(View.INVISIBLE);
+//
+//        editLocation = (EditText) findViewById(R.id.editTextLocation);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         //   SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
