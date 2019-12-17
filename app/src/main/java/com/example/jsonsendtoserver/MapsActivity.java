@@ -60,7 +60,7 @@ import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-//jhfdiasjufghsdjfbsdjhfbsdhjfbsdjhfbsdhjbfjsd
+
 
 public class MapsActivity extends AppCompatActivity {
 
