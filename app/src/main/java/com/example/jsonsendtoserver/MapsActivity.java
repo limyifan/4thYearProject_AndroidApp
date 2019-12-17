@@ -1,9 +1,12 @@
 package com.example.jsonsendtoserver;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Observable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -41,6 +44,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -48,10 +52,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+
+import rx.Observer;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
+public class MapsActivity extends AppCompatActivity {
 
     private String TAG = MapsActivity.class.getSimpleName();
+    NetworkCall networkCall;
     private static String url = "https://www.201.team/tripit-http.php/?location=";
     private ProgressDialog pDialog;
     private GoogleMap mMap;
@@ -59,6 +71,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ListView listView;
     String location;
     int time;
+
+    ArrayList<HashMap<String, String>> result = new ArrayList<>();
+   static ArrayList<HashMap<String, String>> resultNew = new ArrayList<>();
+
+   /* Observer<String> placesObserver =new Observer<String>() {
+        @Override
+        public void onCompleted() {
+            Log.d("onCompleted","Completed");
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            Log.d("onError","onError");
+        }
+
+        @Override
+        public void onNext(String s) {
+            Log.d("onNext",s);
+        }
+    };*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,16 +101,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         setContentView(R.layout.activity_maps);
 
-//        pb = (ProgressBar) findViewById(R.id.progressBar1);
-//        pb.setVisibility(View.INVISIBLE);
-//
-//        editLocation = (EditText) findViewById(R.id.editTextLocation);
+        networkCall = new NetworkCall();
+
+       /* pb = (ProgressBar) findViewById(R.id.progressBar1);
+        pb.setVisibility(View.INVISIBLE);
+
+        editLocation = (EditText) findViewById(R.id.editTextLocation);*/
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         //   SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         //    mapFragment.getMapAsync(this);
         Button goButton = (Button) findViewById(R.id.goButton);
-        goButton.setOnClickListener(new View.OnClickListener() {
+        goButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 EditText locationText = (EditText) findViewById(R.id.editText2);
@@ -88,8 +122,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 listView = (ListView) findViewById(R.id.list);
 
                 time = Integer.parseInt(timeNum.getText().toString());
-               // new SendDeviceDetails().execute("https://www.201.team/tripit-http.php/?location=" + location + "&time=" + time);
-                new ParseJSON().execute();
+           //     new SendDeviceDetails().execute("https://www.201.team/tripit-http.php/?location=" + location + "&time=" + time);
+                Log.d("TAG", "before execution"+resultNew.toString());
+                try {
+                  resultNew = new ParseJSON().execute().get();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Log.d("TAG", "after execution"+resultNew.toString());
+
+           /*     getPlacesRequest().subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(placesObserver);*/
+           Intent intent = new Intent(MapsActivity.this, MapsDisplay.class);
+          intent.putExtra("result",(Serializable) resultNew);
+          Log.d("TAG", "RESULT IS"+resultNew.toString());
+          startActivity(intent);
             }
 
         });
@@ -97,21 +147,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+/*
+    public Observable<String> getPlacesRequest(){
+
+        return Observable.create(new Observable.OnSubscribe<String>() {
+          //  @Override
+            public void call(Subscriber<? super String> subscriber) {
+                try {
+                    String response = networkCall.makeServiceCall("https://www.201.team/tripit-http.php/?location=" +
+                            location + "&time=" + time);
+                    subscriber.onNext(response);
+                    subscriber.onCompleted();
+                }catch (Exception e) {
+                    subscriber.onError(e);
+                }
+            }
+        });
+    }*/
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
     private class SendDeviceDetails extends AsyncTask<String, Void, String> {
 
         @Override
-        protected String doInBackground(String... params) { //what you wantn done in the thread
+        protected String doInBackground(String... params) { //what you want done in the thread
 
             String data = "";
 
@@ -119,24 +178,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             try {
 
                 httpURLConnection = (HttpURLConnection) new URL(params[0]).openConnection();
-                httpURLConnection.setRequestMethod("POST");
+                //make httpurlconnection object by casting url object to it. This is where the connection opens to url.
+                httpURLConnection.setRequestMethod("POST");    // post request
 
-                httpURLConnection.setDoOutput(true);
 
-                Log.d("test3", Integer.toString(params.length));
-                Log.d("testerror", params[0]);
+                httpURLConnection.setDoOutput(true);          // connection outputs - true
+
+
+                Log.d("test", params[0]);
 
 
                 DataOutputStream wr = new DataOutputStream(httpURLConnection.getOutputStream());
+                //make dataoutputstream using getOutputStream, we are going to write to it
+                // getOutputStream opens a stream with intention to write to server
                 wr.writeBytes("request="); // + params[1]
+                //sending data
                 wr.flush();
-                wr.close();
+                wr.close(); //outputStream is closed, not connection
 
                 InputStream in = httpURLConnection.getInputStream();
                 InputStreamReader inputStreamReader = new InputStreamReader(in);
+                //read data from stream, from server
 
                 int inputStreamData = inputStreamReader.read();
-                while (inputStreamData != -1) {
+                while (inputStreamData != -1) { //adding each character from input to data string
                     char current = (char) inputStreamData;
                     inputStreamData = inputStreamReader.read();
                     data += current;
@@ -158,14 +223,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            Log.e("TAG", result); // this is expecting a response code to be sent from your server upon receiving the POST data
+            Log.e("TAG", result); // receiving response code from server
             new ParseJSON().execute();
         }
     }
     protected class ParseJSON extends AsyncTask<Void, Void, ArrayList<HashMap<String, String>>> {
         @Override
         protected void onPreExecute() {
-            super.onPreExecute(); //beore background task is run
+            super.onPreExecute(); //before background task is run
             // Showing progress dialog
             pDialog = new ProgressDialog(MapsActivity.this);
             pDialog.setMessage("Please wait...");
@@ -173,10 +238,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             pDialog.show();
 
         }
+
         @Override
         protected ArrayList<HashMap<String, String>> doInBackground(Void... arg0) {
             HttpHandler handler = new HttpHandler();
-            ArrayList<HashMap<String, String>> result = new ArrayList<>();
+
             HashMap<String, String> candidate = new HashMap<>();
 
             String jsonString = handler.makeServiceCall(url + location + "&time=" + time);
@@ -239,13 +305,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(ArrayList<HashMap<String, String>>result) { //running in uithread, only runinbackground runs in background
             super.onPostExecute(result);
+            Log.d("TAG","onPost"+result);
             // Dismiss the progress dialog
             if (pDialog.isShowing())
                 pDialog.dismiss();
             /**
              * Updating parsed JSON data into ListView
              * */
-            ListAdapter adapter = new SimpleAdapter( //join together UI with DATA, and manage for you - Adapter
+            ListAdapter adapter = new SimpleAdapter( //join together UI with DATA
                     MapsActivity.this, //reference to this activity
                     result,                              // list of Map objects| data
                     R.layout.list_item,                       // view layout (XML)
@@ -253,11 +320,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     new int[]{R.id.name, R.id.lat, R.id.lng});  // name of target TextViews   source data to name of fields //puts into view called "name, email"
             // in list
             listView.setAdapter(adapter);   // connect adapter to ListView                         from map nbeing supplied, there is something called "name"
+
         }
     }
 
 
-    @Override
+
+   /* @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
@@ -268,16 +337,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         // onClickBtn(R.layout.activity_maps);
-       /* JSONObject request = new JSONObject();
+       *//* JSONObject request = new JSONObject();
         try {
             request.put("location", location);
             request.put("time", time);
         } catch (JSONException e) {
             e.printStackTrace();
             request.toString()
-        }*/
+        }*//*
 
 
-    }
+    }*/
 
 }
