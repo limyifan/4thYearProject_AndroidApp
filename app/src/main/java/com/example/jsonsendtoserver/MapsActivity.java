@@ -1,34 +1,22 @@
 package com.example.jsonsendtoserver;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Observable;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.util.Log;
-import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.example.jsonsendtoserver.Services.HttpHandler;
+import com.example.jsonsendtoserver.Services.NetworkCall;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,24 +29,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.ExecutionException;
-
-
-import rx.Observer;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 
 
@@ -135,9 +113,6 @@ public class MapsActivity extends AppCompatActivity {
                 }
                 Log.d("TAG", "after execution"+resultNew.toString());
 
-           /*     getPlacesRequest().subscribeOn(Schedulers.newThread())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(placesObserver);*/
            Intent intent = new Intent(MapsActivity.this, MapsDisplay.class);
           intent.putExtra("result",(Serializable) resultNew);
           Log.d("TAG", "RESULT IS"+resultNew.toString());
@@ -145,29 +120,7 @@ public class MapsActivity extends AppCompatActivity {
             }
 
         });
-
-
     }
-
-/*
-    public Observable<String> getPlacesRequest(){
-
-        return Observable.create(new Observable.OnSubscribe<String>() {
-          //  @Override
-            public void call(Subscriber<? super String> subscriber) {
-                try {
-                    String response = networkCall.makeServiceCall("https://www.201.team/tripit-http.php/?location=" +
-                            location + "&time=" + time);
-                    subscriber.onNext(response);
-                    subscriber.onCompleted();
-                }catch (Exception e) {
-                    subscriber.onError(e);
-                }
-            }
-        });
-    }*/
-
-
 
     private class SendDeviceDetails extends AsyncTask<String, Void, String> {
 
@@ -183,12 +136,9 @@ public class MapsActivity extends AppCompatActivity {
                 //make httpurlconnection object by casting url object to it. This is where the connection opens to url.
                 httpURLConnection.setRequestMethod("POST");    // post request
 
-
                 httpURLConnection.setDoOutput(true);          // connection outputs - true
 
-
                 Log.d("test", params[0]);
-
 
                 DataOutputStream wr = new DataOutputStream(httpURLConnection.getOutputStream());
                 //make dataoutputstream using getOutputStream, we are going to write to it
@@ -216,11 +166,8 @@ public class MapsActivity extends AppCompatActivity {
 
                 }
             }
-
             return data;
         }
-
-
 
         @Override
         protected void onPostExecute(String result) {
@@ -229,6 +176,7 @@ public class MapsActivity extends AppCompatActivity {
             new ParseJSON().execute();
         }
     }
+
     protected class ParseJSON extends AsyncTask<Void, Void, ArrayList<HashMap<String, String>>> {
         @Override
         protected void onPreExecute() {
@@ -238,7 +186,6 @@ public class MapsActivity extends AppCompatActivity {
             pDialog.setMessage("Please wait...");
             pDialog.setCancelable(false);
             pDialog.show();
-
         }
 
         @Override
@@ -272,9 +219,6 @@ public class MapsActivity extends AppCompatActivity {
                                         double vSWLat = southwest.getDouble("lat");
                                         double vSWLng = southwest.getDouble("lng");
                             String name = c.getString("name");
-
-
-
 
                         candidate.put("name", name);
                         candidate.put("lat", lat);

@@ -1,4 +1,4 @@
-package com.example.jsonsendtoserver;
+package com.example.jsonsendtoserver.Services;
 
 import android.util.Log;
 
