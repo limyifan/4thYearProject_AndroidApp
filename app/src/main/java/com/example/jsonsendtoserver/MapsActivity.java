@@ -66,7 +66,7 @@ public class MapsActivity extends AppCompatActivity {
     NetworkCall networkCall;
     private static String url = "https://www.201.team/tripit-http.php/?location=";
     private ProgressDialog pDialog;
-    private GoogleMap mMap;
+    private GoogleMap mMap;     
     ArrayList<HashMap<String, String>> candidateList;
     private ListView listView;
     String location;
