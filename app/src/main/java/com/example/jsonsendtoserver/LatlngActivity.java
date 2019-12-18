@@ -30,10 +30,11 @@ public class LatlngActivity extends AppCompatActivity {
 
     private String TAG = LatlngActivity.class.getSimpleName();
      NetworkCall networkCall;
-    private static String url = "https://www.201.team/placebasic.php/";
+    private static String url = "https://www.201.team/api/placebasic.php/";
     private ProgressDialog pDialog;
     int time;
     String perf;
+    int count = 0;
 
     ArrayList<HashMap<String, String>> result = new ArrayList<>();
     ArrayList<HashMap<String, String>> resultNew = new ArrayList<>();
@@ -122,10 +123,13 @@ public class LatlngActivity extends AppCompatActivity {
                         String lat = c.getString("latitude");
                         String lng = c.getString("longitude");
                         String name = c.getString("name");
+                        String countToString = Integer.toString(count);
 
                         candidate.put("name", name);
                         candidate.put("lat", lat);
                         candidate.put("lng", lng);
+                        candidate.put("count", countToString);
+                        count++;
 
                         result.add(candidate);
                     }

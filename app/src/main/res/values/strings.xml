@@ -2,4 +2,5 @@
     <string name="app_name">JSONSendToServer</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_maps_display">Map</string>
+    <string name="title_activity_get_time">GetTime</string>
 </resources>
