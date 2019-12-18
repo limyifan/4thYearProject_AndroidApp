@@ -35,8 +35,6 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        String lat = "";
-        String lng = "";
 
         // Add a marker in Sydney and move the camera
         Intent intent = getIntent();
@@ -46,9 +44,9 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
         Log.d("TAG", "LATLNGPLOT IS" +log);
         HashMap<String, String> resultHashMap = latLngPlot.get(latLngPlot.size()-1);
 
-          lng = resultHashMap.get("lng");
-          lat = resultHashMap.get("lat");
-          
+        String lng = resultHashMap.get("lng");
+        String lat = resultHashMap.get("lat");
+
         Double latDouble = Double.parseDouble(lat);
         Double lngDouble = Double.parseDouble(lng);
 
