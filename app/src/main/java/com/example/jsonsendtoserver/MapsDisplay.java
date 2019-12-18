@@ -60,14 +60,18 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
 
             Log.e(TAG,name);
             mMap.addMarker(new MarkerOptions().position(location).title("Marker in "+name));
-            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker) {
-                    //mMap.moveCamera(mMap.moveCamera(CameraUpdateFactory.newLatLng( marker.getPosition())));
-                    return true;
-                }
-            });
+            mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
+            mMap.setBuildingsEnabled(true);
+            mMap.setIndoorEnabled(true);
         }
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15));
+                return true;
+            }
+        });
         mMap.setMyLocationEnabled(true);
     }
 }
