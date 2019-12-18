@@ -60,6 +60,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
 
             Log.e(TAG,name);
             mMap.addMarker(new MarkerOptions().position(location).title("Marker in "+name));
+<<<<<<< Updated upstream
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
             mMap.setBuildingsEnabled(true);
             mMap.setIndoorEnabled(true);
@@ -73,5 +74,16 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
             }
         });
         mMap.setMyLocationEnabled(true);
+=======
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker) {
+                    mMap.animateCamera(CameraUpdateFactory.newLatLng( marker.getPosition()));
+                    return true;
+                }
+            });
+        }
+       // mMap.setMyLocationEnabled(true);
+>>>>>>> Stashed changes
     }
 }
