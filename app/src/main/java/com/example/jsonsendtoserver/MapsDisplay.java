@@ -6,11 +6,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
@@ -42,17 +44,30 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
         ArrayList<HashMap<String, String>> latLngPlot = (ArrayList<HashMap<String, String>>) intent.getSerializableExtra("result");
         String log = latLngPlot.toString();
         Log.d("TAG", "LATLNGPLOT IS" +log);
-        HashMap<String, String> resultHashMap = latLngPlot.get(latLngPlot.size()-1);
 
-        String lng = resultHashMap.get("lng");
-        String lat = resultHashMap.get("lat");
+        for (int i = 0; i < latLngPlot.size(); i++) {
 
-        Double latDouble = Double.parseDouble(lat);
-        Double lngDouble = Double.parseDouble(lng);
+            HashMap<String, String> resultHashMap = latLngPlot.get(i);
 
-        LatLng location = new LatLng(latDouble, lngDouble);
+            String name = resultHashMap.get("name");
+            String lng = resultHashMap.get("lng");
+            String lat = resultHashMap.get("lat");
 
-        mMap.addMarker(new MarkerOptions().position(location).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+            Double latDouble = Double.parseDouble(lat);
+            Double lngDouble = Double.parseDouble(lng);
+
+            LatLng location = new LatLng(latDouble, lngDouble);
+
+            Log.e(TAG,name);
+            mMap.addMarker(new MarkerOptions().position(location).title("Marker in "+name));
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker) {
+                    //mMap.moveCamera(mMap.moveCamera(CameraUpdateFactory.newLatLng( marker.getPosition())));
+                    return true;
+                }
+            });
+        }
+        mMap.setMyLocationEnabled(true);
     }
 }

@@ -170,7 +170,7 @@ public class MapsActivity extends AppCompatActivity {
             HashMap<String, String> candidate = new HashMap<>();
 
             //String jsonString = handler.makeServiceCall(url +"?lat="+ location + "&time=" + time);
-            String jsonString = handler.makeServiceCall(url+"?lat=53.985446&lng=-6.394517&time="+time);
+            String jsonString = handler.makeServiceCall(url+"?lat=53.9967788&lng=-6.4042121&time="+time);
             jsonString = jsonString.replace("You are in "+location+ ". You have "+time+" minutes."," ");
             Log.d(TAG, "Response from url: " + jsonString);
             if (jsonString != null){
