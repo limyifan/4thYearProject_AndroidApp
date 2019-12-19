@@ -35,4 +35,5 @@ dependencies {
 
 //https://github.com/ReactiveX/RxJava/wiki/Getting-Started
     implementation 'io.reactivex:rxjava:1.1.6'
+    implementation 'androidx.gridlayout:gridlayout:1.0.0'
 }
