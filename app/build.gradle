@@ -36,8 +36,13 @@ dependencies {
 //https://github.com/ReactiveX/RxJava/wiki/Getting-Started
     implementation 'io.reactivex:rxjava:1.1.6'
 
+    //Google Maps / DirectionAPI
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'com.google.android.gms:play-services-location:17.0.0'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
+
+    //http request
+
+    implementation("com.squareup.okhttp3:okhttp:4.2.1")
 
 }

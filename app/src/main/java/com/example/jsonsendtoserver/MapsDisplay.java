@@ -2,11 +2,13 @@ package com.example.jsonsendtoserver;
 
 import androidx.fragment.app.FragmentActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.jsonsendtoserver.Services.DataParser;
 import com.google.android.gms.maps.CameraUpdate;
@@ -21,22 +23,19 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback {
 
     private static final String TAG = MapsDisplay.class.getSimpleName();
     private GoogleMap mMap;
     private ArrayList<LatLng> latLngs = new ArrayList<>();
+    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +57,6 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
         ArrayList<HashMap<String, String>> latLngPlot = (ArrayList<HashMap<String, String>>) intent.getSerializableExtra("result");
         String log = latLngPlot.toString();
         Log.d("TAG", "LATLNGPLOT IS" +log);
-
 
         for (int i = 0; i < latLngPlot.size(); i++) {
 
@@ -91,29 +89,38 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
         mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
-//        PolylineOptions lineOptions = new PolylineOptions().addAll(latLngs).color(Color.BLUE).width(5);
-//
-//        if(lineOptions != null) {
-//            mMap.addPolyline(lineOptions);
-//        }
 
-        String origin = latLngs.get(0).latitude+","+latLngs.get(0).longitude;
-        String destination = latLngs.get(1).latitude+","+latLngs.get(1).longitude;
+        pDialog = new ProgressDialog(MapsDisplay.this);
+        pDialog.setIndeterminate(false);
+        pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        pDialog.setMessage("Maps Loading...");
+        pDialog.setCancelable(true);
+        pDialog.show();
 
-        new FetchUrl().execute("https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+destination+"&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw");
+        for (int i = 0; i <latLngs.size()-1 ; i++) {
 
+            String origin = latLngs.get(i).latitude+","+latLngs.get(i).longitude;
+            String destination = latLngs.get(i+1).latitude+","+latLngs.get(i+1).longitude;
+
+            new FetchUrl().execute("https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+destination+"&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw");
+        }
+
+        if (pDialog.isShowing())
+            pDialog.dismiss();
     }
 
     private class FetchUrl extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... url) {
-// For storing data from web service
             String data = "";
             try {
-// Fetching the data from web service
-                data = downloadUrl(url[0]);
-                Log.d("Background Task data", data.toString());
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .url(url[0])
+                        .build();
+                data= client.newCall(request).execute().body().string();
             } catch (Exception e) {
+                Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_LONG).show();
                 Log.d("Background Task", e.toString());
             }
             return data;
@@ -124,36 +131,6 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
             ParserTask parserTask = new ParserTask();
             parserTask.execute(result);
         }
-    }
-
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(strUrl);
-// Creating an http connection to communicate with url
-            urlConnection = (HttpURLConnection) url.openConnection();
-// Connecting to url
-            urlConnection.connect();
-// Reading data from url
-            iStream = urlConnection.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-            StringBuffer sb = new StringBuffer();
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-            data = sb.toString();
-            Log.d("downloadUrl", data.toString());
-            br.close();
-        } catch (Exception e) {
-            Log.d("Exception", e.toString());
-        } finally {
-            iStream.close();
-            urlConnection.disconnect();
-        }
-        return data;
     }
 
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
@@ -182,13 +159,10 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
             ArrayList<LatLng> points;
             PolylineOptions lineOptions = null;
-// Traversing through all the routes
             for (int i = 0; i < result.size(); i++) {
                 points = new ArrayList<>();
                 lineOptions = new PolylineOptions();
-// Fetching i-th route
                 List<HashMap<String, String>> path = result.get(i);
-// Fetching all the points in i-th route
                 for (int j = 0; j < path.size(); j++) {
                     HashMap<String, String> point = path.get(j);
                     double lat = Double.parseDouble(point.get("lat"));
@@ -196,13 +170,10 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
                     LatLng position = new LatLng(lat, lng);
                     points.add(position);
                 }
-// Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
                 lineOptions.width(10);
-                lineOptions.color(Color.RED);
                 Log.d("onPostExecute","onPostExecute lineoptions decoded");
             }
-// Drawing polyline in the Google Map for the i-th route
             if(lineOptions != null) {
                 mMap.addPolyline(lineOptions);
             }
