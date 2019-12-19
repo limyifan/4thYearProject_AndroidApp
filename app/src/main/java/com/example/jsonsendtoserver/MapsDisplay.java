@@ -124,14 +124,15 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
             Log.e(TAG, name);
             mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
             if (count == 0) {
-                mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
-                mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
+
                 mMap.setBuildingsEnabled(true);
                 mMap.setIndoorEnabled(true);
             }
 
             mMap.addMarker(new MarkerOptions().position(location).title("Marker in "+name));
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
+            mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
+
             mMap.setBuildingsEnabled(true);
             mMap.setIndoorEnabled(true);
 
