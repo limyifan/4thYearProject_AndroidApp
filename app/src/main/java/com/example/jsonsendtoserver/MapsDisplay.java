@@ -11,7 +11,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.jsonsendtoserver.Services.DataParser;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -23,6 +22,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,100 +86,102 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
                 return true;
             }
         });
-        mMap.setMyLocationEnabled(true);
+        new LoopMarker().execute();
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
-
-        pDialog = new ProgressDialog(MapsDisplay.this);
-        pDialog.setIndeterminate(false);
-        pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        pDialog.setMessage("Maps Loading...");
-        pDialog.setCancelable(true);
-        pDialog.show();
-
-        for (int i = 0; i <latLngs.size()-1 ; i++) {
-
-            String origin = latLngs.get(i).latitude+","+latLngs.get(i).longitude;
-            String destination = latLngs.get(i+1).latitude+","+latLngs.get(i+1).longitude;
-
-            new FetchUrl().execute("https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+destination+"&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw");
-        }
-
-        if (pDialog.isShowing())
-            pDialog.dismiss();
     }
 
-    private class FetchUrl extends AsyncTask<String, Void, String> {
+
+    private class LoopMarker extends AsyncTask<Void, Void, ArrayList<PolylineOptions>> {
         @Override
-        protected String doInBackground(String... url) {
-            String data = "";
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // Showing progress dialog
+            pDialog = new ProgressDialog(MapsDisplay.this);
+            pDialog.setIndeterminate(false);
+            pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            pDialog.setMessage("Please wait...");
+            pDialog.show();
+        }
+
+        @Override
+        protected ArrayList<PolylineOptions> doInBackground(Void... stgr) {
+            ArrayList<PolylineOptions> polylineOptions = new ArrayList<>();
+
+            for (int i = 0; i <latLngs.size()-1 ; i++) {
+
+                String origin = latLngs.get(i).latitude+","+latLngs.get(i).longitude;
+                String destination = latLngs.get(i+1).latitude+","+latLngs.get(i+1).longitude;
+
+                polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+destination+"&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw"));
+
+            }
+            return polylineOptions;
+        }
+        @Override
+        protected void onPostExecute( ArrayList<PolylineOptions> result) {
+            super.onPostExecute(result);
+
+            if (pDialog.isShowing()) {
+                pDialog.dismiss();
+            }
+
+            if(result != null) {
+                for (int i = 0; i < result.size(); i++) {
+                    mMap.addPolyline(result.get(i));
+                }
+            }
+        }
+    }
+
+    public PolylineOptions addMarker(String url){
             try {
                 OkHttpClient client = new OkHttpClient();
                 Request request = new Request.Builder()
-                        .url(url[0])
+                        .url(url)
                         .build();
-                data= client.newCall(request).execute().body().string();
+                String data= client.newCall(request).execute().body().string();
+                return parserTaskToPolyLine(data);
+
             } catch (Exception e) {
-                Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_LONG).show();
                 Log.d("Background Task", e.toString());
             }
-            return data;
-        }
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            ParserTask parserTask = new ParserTask();
-            parserTask.execute(result);
-        }
+            return null;
     }
 
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
-        // Parsing the data in non-ui thread
-        @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+    private PolylineOptions parserTaskToPolyLine(String jsonData) {
             JSONObject jObject;
             List<List<HashMap<String, String>>> routes = null;
+        PolylineOptions lineOptions = new PolylineOptions();
             try {
-                jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask",jsonData[0].toString());
+                jObject = new JSONObject(jsonData);
+                Log.d("parserTaskToPolyLine",jsonData);
                 DataParser parser = new DataParser();
-                Log.d("ParserTask", parser.toString());
-// Starts parsing data
+                Log.d("parserTaskToPolyLine", parser.toString());
+
                 routes = parser.parse(jObject);
-                Log.d("ParserTask","Executing routes");
-                Log.d("ParserTask",routes.toString());
+
+                ArrayList<LatLng> points;
+                for (int i = 0; i < routes.size(); i++) {
+                    points = new ArrayList<>();
+                    List<HashMap<String, String>> path = routes.get(i);
+                    for (int j = 0; j < path.size(); j++) {
+                        HashMap<String, String> point = path.get(j);
+                        double lat = Double.parseDouble(point.get("lat"));
+                        double lng = Double.parseDouble(point.get("lng"));
+                        LatLng position = new LatLng(lat, lng);
+                        points.add(position);
+                    }
+                    lineOptions.addAll(points);
+                    lineOptions.width(10);
+                    lineOptions.color(Color.BLUE);
+                }
             } catch (Exception e) {
-                Log.d("ParserTask",e.toString());
+                Log.e("parserTaskToPolyLine",e.toString());
                 e.printStackTrace();
             }
-            return routes;
-        }
-        // Executes in UI thread, after the parsing process
-        @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points;
-            PolylineOptions lineOptions = null;
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList<>();
-                lineOptions = new PolylineOptions();
-                List<HashMap<String, String>> path = result.get(i);
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-                    points.add(position);
-                }
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-                Log.d("onPostExecute","onPostExecute lineoptions decoded");
-            }
-            if(lineOptions != null) {
-                mMap.addPolyline(lineOptions);
-            }
-            else {
-                Log.d("onPostExecute","without Polylines drawn");
-            }
-        }
+
+        Log.d("onPostExecute","lineOptions result zone: "+lineOptions.getPoints().toString());
+        return lineOptions;
     }
 }
