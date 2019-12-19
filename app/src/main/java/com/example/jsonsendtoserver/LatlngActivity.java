@@ -30,7 +30,7 @@ public class LatlngActivity extends AppCompatActivity {
 
     private String TAG = LatlngActivity.class.getSimpleName();
      NetworkCall networkCall;
-    private static String url = "https://www.201.team/placebasic.php/";
+    private static String url = "https://www.201.team/api/placebasic.php/";
     private ProgressDialog pDialog;
     int time;
     String perf;
