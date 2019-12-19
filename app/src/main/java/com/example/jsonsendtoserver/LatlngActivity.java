@@ -26,28 +26,24 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
-
-import android.content.pm.PackageManager;
 import android.location.Location;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
+
 public class LatlngActivity extends AppCompatActivity {
     private FusedLocationProviderClient client;
     private String TAG = LatlngActivity.class.getSimpleName();
      NetworkCall networkCall;
     private static String url = "https://www.201.team/api/placebasic.php/";
     private ProgressDialog pDialog;
-    int time;
     String perf;
-
-    int count = 0;
 
     private String latitude;
     private String longitude;
-
 
     ArrayList<HashMap<String, String>> result = new ArrayList<>();
     ArrayList<HashMap<String, String>> resultNew = new ArrayList<>();
@@ -57,6 +53,11 @@ public class LatlngActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_latlng);
 
+        networkCall = new NetworkCall();
+        final TextView lat = findViewById(R.id.lat);
+        final TextView lng =  findViewById(R.id.lng);
+
+        requestPermission();
         client = LocationServices.getFusedLocationProviderClient(this);
         client.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -64,19 +65,19 @@ public class LatlngActivity extends AppCompatActivity {
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
-                           latitude= String.valueOf(location.getLatitude());
+                            latitude= String.valueOf(location.getLatitude());
                             longitude= String.valueOf(location.getLongitude());
-                            Log.d(TAG,"latitude"+latitude+""); Log.d(TAG,"latitude"+longitude+"");
-
+                            lat.setText(latitude);
+                            lng.setText(longitude);
+                            Log.d(TAG,"latitude"+latitude+"");
+                            Log.d(TAG,"latitude"+longitude+"");
+                        }
+                        else {
+                            latitude= "42.365978";
+                            longitude= "-71.097038";
                         }
                     }
                 });
-        networkCall = new NetworkCall();
-        final TextView lat = findViewById(R.id.lat);
-        final TextView lng =  findViewById(R.id.lng);
-
-        requestPermission();
-        client = LocationServices.getFusedLocationProviderClient(this);
 
         Button food = findViewById(R.id.food);
         Button museum = findViewById(R.id.museum);
@@ -101,9 +102,6 @@ public class LatlngActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                lat.setText(latitude);
-                lng.setText(longitude);
-
                 Log.d("TAG", "before execution"+resultNew.toString());
                 try {
                     resultNew = new ParseJSON().execute().get();
@@ -116,7 +114,7 @@ public class LatlngActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(LatlngActivity.this, MapsDisplay.class);
                 intent.putExtra("result",(Serializable) resultNew);
-                Log.d("TAG", "RESULT IS"+resultNew.toString());
+                Log.d("TAG", "RESULT IS"+ resultNew.toString());
                 startActivity(intent);
             }
 
@@ -140,12 +138,11 @@ public class LatlngActivity extends AppCompatActivity {
         protected ArrayList<HashMap<String, String>> doInBackground(Void... arg0) {
             HttpHandler handler = new HttpHandler();
 
-
-            //String jsonString = handler.makeServiceCall(url +"?lat="+ location + "&time=" + time);
             String jsonString = handler.makeServiceCall(url+"?lat="+latitude+"&lng="+longitude+"&pref1="+perf);
             Log.d(TAG, "Response from url: " + jsonString);
             if (jsonString != null){
                 try {
+                    int count = 0;
                     JSONObject jsonObj = new JSONObject(jsonString);
                     JSONArray candidates = jsonObj.getJSONArray("PlaceObject");
                     for (int i = 0; i < candidates.length(); i++)
