@@ -86,7 +86,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
                 return true;
             }
         });
-        mMap.setMyLocationEnabled(true);
+       // mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
 
