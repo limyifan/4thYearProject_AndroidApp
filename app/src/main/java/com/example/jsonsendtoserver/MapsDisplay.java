@@ -120,16 +120,9 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
 
             LatLng location = new LatLng(latDouble, lngDouble);
 
-
             Log.e(TAG, name);
-            mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
-            if (count == 0) {
 
-                mMap.setBuildingsEnabled(true);
-                mMap.setIndoorEnabled(true);
-            }
-
-            mMap.addMarker(new MarkerOptions().position(location).title("Marker in "+name));
+            mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
             mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
 
@@ -169,7 +162,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
                     LatLng location = new LatLng(latDouble, lngDouble);
 
                     Log.e(TAG, name);
-
+                mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
 
                     nextButtonClickedCount++;
                     nextButtonClicked = true;
