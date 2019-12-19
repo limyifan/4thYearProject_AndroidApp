@@ -74,6 +74,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
             LatLng location = new LatLng(latDouble, lngDouble);
 
             mMap.addMarker(new MarkerOptions().position(location).title("Marker in "+name));
+<<<<<<< Updated upstream
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
             mMap.setBuildingsEnabled(true);
             mMap.setIndoorEnabled(true);
