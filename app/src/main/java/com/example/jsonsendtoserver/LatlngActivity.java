@@ -1,6 +1,7 @@
 package com.example.jsonsendtoserver;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -26,15 +27,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
-public class LatlngActivity extends AppCompatActivity {
+import android.content.pm.PackageManager;
+import android.location.Location;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+public class LatlngActivity extends AppCompatActivity {
+    private FusedLocationProviderClient client;
     private String TAG = LatlngActivity.class.getSimpleName();
      NetworkCall networkCall;
     private static String url = "https://www.201.team/api/placebasic.php/";
     private ProgressDialog pDialog;
     int time;
     String perf;
+
     int count = 0;
+
+    private String latitude;
+    private String longitude;
+
 
     ArrayList<HashMap<String, String>> result = new ArrayList<>();
     ArrayList<HashMap<String, String>> resultNew = new ArrayList<>();
@@ -43,9 +56,27 @@ public class LatlngActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_latlng);
+
+        client = LocationServices.getFusedLocationProviderClient(this);
+        client.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                           latitude= String.valueOf(location.getLatitude());
+                            longitude= String.valueOf(location.getLongitude());
+                            Log.d(TAG,"latitude"+latitude+""); Log.d(TAG,"latitude"+longitude+"");
+
+                        }
+                    }
+                });
         networkCall = new NetworkCall();
         final TextView lat = findViewById(R.id.lat);
         final TextView lng =  findViewById(R.id.lng);
+
+        requestPermission();
+        client = LocationServices.getFusedLocationProviderClient(this);
 
         Button food = findViewById(R.id.food);
         Button museum = findViewById(R.id.museum);
@@ -70,8 +101,8 @@ public class LatlngActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                lat.setText("53.9967788");
-                lng.setText("-6.4042121");
+                lat.setText(latitude);
+                lng.setText(longitude);
 
                 Log.d("TAG", "before execution"+resultNew.toString());
                 try {
@@ -91,7 +122,9 @@ public class LatlngActivity extends AppCompatActivity {
 
         });
     }
-
+    private void requestPermission(){
+        ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, 1);
+    }
     protected class ParseJSON extends AsyncTask<Void, Void, ArrayList<HashMap<String, String>>> {
         @Override
         protected void onPreExecute() {
@@ -109,7 +142,7 @@ public class LatlngActivity extends AppCompatActivity {
 
 
             //String jsonString = handler.makeServiceCall(url +"?lat="+ location + "&time=" + time);
-            String jsonString = handler.makeServiceCall(url+"?lat=53.9967788&lng=-6.4042121&pref1="+perf);
+            String jsonString = handler.makeServiceCall(url+"?lat="+latitude+"&lng="+longitude+"&pref1="+perf);
             Log.d(TAG, "Response from url: " + jsonString);
             if (jsonString != null){
                 try {

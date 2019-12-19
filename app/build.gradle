@@ -26,8 +26,8 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.google.android.material:material:1.0.0'
 
     //https://github.com/ReactiveX/RxAndroid
@@ -35,5 +35,18 @@ dependencies {
 
 //https://github.com/ReactiveX/RxJava/wiki/Getting-Started
     implementation 'io.reactivex:rxjava:1.1.6'
+
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
+
+
+    //Google Maps / DirectionAPI
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'org.slf4j:slf4j-nop:1.7.25'
+
+    //http request
+
+    implementation("com.squareup.okhttp3:okhttp:4.2.1")
+
+
 }
