@@ -4,14 +4,18 @@ import androidx.fragment.app.FragmentActivity;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import android.app.ProgressDialog;
@@ -183,14 +187,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
             @Override
             public boolean onMarkerClick(Marker marker) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15));
-                return true;
-            }
-        });
-
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+                marker.showInfoWindow();
                 if (markerClickedCount == 0) {
                     setMarkerBegin = true;
                 }
