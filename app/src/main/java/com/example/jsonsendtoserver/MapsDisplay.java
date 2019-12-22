@@ -1,13 +1,22 @@
 package com.example.jsonsendtoserver;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -24,10 +33,18 @@ import android.graphics.Color;
 
 
 import com.example.jsonsendtoserver.Services.DataParser;
+import com.example.jsonsendtoserver.Services.HttpHandler;
+import com.example.jsonsendtoserver.Services.NetworkCall;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -47,6 +64,8 @@ import java.util.Map;
 import android.os.Handler;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -54,26 +73,43 @@ import java.util.List;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback {
 
+public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+    Location mLastLocation;
+    Marker mCurrLocationMarker;
     private static final String TAG = MapsDisplay.class.getSimpleName();
     private GoogleMap mMap;
-
+    private Location location;
+    private TextView locationTv;
+    private GoogleApiClient googleApiClient;
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private LocationRequest locationRequest;
+    private static final long UPDATE_INTERVAL = 5000, FASTEST_INTERVAL = 5000; // = 5 seconds
+    // lists for permissions
+    private ArrayList<String> permissionsToRequest;
+    private ArrayList<String> permissionsRejected = new ArrayList<>();
+    private ArrayList<String> permissions = new ArrayList<>();
+    // integer for permissions results request
+    private static final int ALL_PERMISSIONS_RESULT = 1011;
+    NetworkCall networkCall;
     Boolean setMarkerBegin = false;
     int markerClickedCount = 0;
     boolean doubleBackToExitPressedOnce = false;
     static final int GET_TIME_REQUEST = 1;
     ArrayList<HashMap<String, String>> latLngPlot;
 
-
+    private String latitude;
+    private String longitude;
     int timeTaken = 0;
     Boolean nextButtonClicked = false;
     int nextButtonClickedCount = 0;
     Button nextButton;
     EditText numBox;
-
+    SupportMapFragment mapFrag;
     private ArrayList<LatLng> latLngs = new ArrayList<>();
     private ProgressDialog pDialog;
 
@@ -85,8 +121,45 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        networkCall = new NetworkCall();
+        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        permissionsToRequest = permissionsToRequest(permissions);
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (permissionsToRequest.size() > 0) {
+                requestPermissions(permissionsToRequest.toArray(
+                        new String[permissionsToRequest.size()]), ALL_PERMISSIONS_RESULT);
+            }
+        }
+        mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFrag.getMapAsync(this);
+        googleApiClient = new GoogleApiClient.Builder(this).
+                addApi(LocationServices.API).
+                addConnectionCallbacks(this).
+                addOnConnectionFailedListener(this).build();
+    }
+    private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {
+        ArrayList<String> result = new ArrayList<>();
+
+        for (String perm : wantedPermissions) {
+            if (!hasPermission(perm)) {
+                result.add(perm);
+            }
+        }
+
+        return result;
     }
 
+    private boolean hasPermission(String permission) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
+        }
+
+        return true;
+    }
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -105,7 +178,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
             String lng = resultHashMap.get("lng");
             String lat = resultHashMap.get("lat");
             String countToString = resultHashMap.get("count");
-
+            Log.d("TAG", "LAT IS" + lat);
             Double latDouble = Double.parseDouble(lat);
             Double lngDouble = Double.parseDouble(lng);
             int count = Integer.parseInt(countToString);
@@ -221,19 +294,30 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
         b.setX(numPosX);
         b.setY(numPosY);
     }
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (googleApiClient != null) {
+            googleApiClient.connect();
+        }
+    }
 
     @Override
     public void onPause() {
         super.onPause();  // Always call the superclass method first
 
-        // Release the Camera because we don't need it when paused
-        // and other activities might need to use it.
+        if (googleApiClient != null  &&  googleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+            googleApiClient.disconnect();
+        }
 
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
     }
 
     public class SendDeviceDetails extends AsyncTask<String, Void, String> {
@@ -290,6 +374,126 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
 
         }
     }
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                &&  ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        // Permissions ok, we get last location
+        location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+
+//        if (location != null) {
+//
+//            latitude= String.valueOf(location.getLatitude());
+//            longitude= String.valueOf(location.getLongitude());
+//
+//            Log.d(TAG,"latitude"+latitude+"");
+//            Log.d(TAG,"latitude"+longitude+"");
+//            LatLng mylocation = new LatLng( Double.parseDouble(latitude), Double.parseDouble(longitude));
+//            Log.d("TAG", "ur location" + latitude);
+//            mMap.addMarker(new MarkerOptions().position(mylocation).title("You are Here"));
+//        }
+
+        startLocationUpdates();
+    }
+
+    private void startLocationUpdates() {
+        locationRequest = new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(UPDATE_INTERVAL);
+        locationRequest.setFastestInterval(FASTEST_INTERVAL);
+
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                &&  ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "You need to enable permissions to display location !", Toast.LENGTH_SHORT).show();
+        }
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+//        if (location != null) {
+//            latitude= String.valueOf(location.getLatitude());
+//            longitude= String.valueOf(location.getLongitude());
+//            LatLng mylocation = new LatLng( Double.parseDouble(latitude), Double.parseDouble(longitude));
+//            mMap.addMarker(new MarkerOptions().position(mylocation).title("You are Here"));
+//            Log.d(TAG,"changed"+latitude+"");
+//            Log.d(TAG,"changed"+longitude+"");}
+        mLastLocation = location;
+        if (mCurrLocationMarker != null) {
+            mCurrLocationMarker.remove();
+        }
+
+        //Place current location marker
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.title("Current Position");
+        Log.d(TAG,"location changed"+latLng+"");
+
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+        mCurrLocationMarker = mMap.addMarker(markerOptions);
+
+        //move map camera
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,13));
+
+            }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch(requestCode) {
+            case ALL_PERMISSIONS_RESULT:
+                for (String perm : permissionsToRequest) {
+                    if (!hasPermission(perm)) {
+                        permissionsRejected.add(perm);
+                    }
+                }
+
+                if (permissionsRejected.size() > 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (shouldShowRequestPermissionRationale(permissionsRejected.get(0))) {
+                            new AlertDialog.Builder(MapsDisplay.this).
+                                    setMessage("These permissions are mandatory to get your location. You need to allow them.").
+                                    setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                                requestPermissions(permissionsRejected.
+                                                        toArray(new String[permissionsRejected.size()]), ALL_PERMISSIONS_RESULT);
+                                            }
+                                        }
+                                    }).setNegativeButton("Cancel", null).create().show();
+
+                            return;
+                        }
+                    }
+                } else {
+                    if (googleApiClient != null) {
+                        googleApiClient.connect();
+                    }
+                }
+
+                break;
+        }
+    }
+
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -313,12 +517,13 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            // Showing progress dialog
+
             pDialog = new ProgressDialog(MapsDisplay.this);
             pDialog.setIndeterminate(false);
             pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             pDialog.setMessage("Please wait...");
             pDialog.show();
+            pDialog.dismiss();
         }
 
         @Override
