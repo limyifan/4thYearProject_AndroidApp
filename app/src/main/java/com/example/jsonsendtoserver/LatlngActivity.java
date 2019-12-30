@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 
+import com.example.jsonsendtoserver.MapsResult.MapsResultActivity;
 import com.example.jsonsendtoserver.Services.HttpHandler;
 import com.example.jsonsendtoserver.Services.NetworkCall;
 
@@ -50,7 +51,6 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class LatlngActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
-    private FusedLocationProviderClient fusedLocationClient;
     private String TAG = LatlngActivity.class.getSimpleName();
      NetworkCall networkCall;
     private static String url = "https://www.201.team/api/placebasic.php/";
@@ -59,7 +59,6 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
     TextView lat;
     TextView lng ;
     public Location location;
-    private TextView locationTv;
     private GoogleApiClient googleApiClient;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private LocationRequest locationRequest;
@@ -86,37 +85,6 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
         lat = findViewById(R.id.lat);
          lng =  findViewById(R.id.lng);
 
-//        requestPermission();
-//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-//        fusedLocationClient.getLastLocation()
-//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-//                    protected void createLocationRequest() {
-//                        LocationRequest locationRequest = LocationRequest.create();
-//                        locationRequest.setInterval(10000);
-//                        locationRequest.setFastestInterval(5000);
-//                        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//                    }
-//                    @Override
-//                    public void onSuccess(Location location) {
-//                        // Got last known location. In some rare situations this can be null.
-//                        if (location != null) {
-//                            latitude= String.valueOf(location.getLatitude());
-//                            longitude= String.valueOf(location.getLongitude());
-//                            lat.setText(latitude);
-//                            lng.setText(longitude);
-//                            Log.d(TAG,"latitude"+latitude+"");
-//                            Log.d(TAG,"latitude"+longitude+"");
-//                        }
-//                        else {
-////                            latitude= "42.365978";
-////                            longitude= "-71.097038";
-//                        }
-//                    }
-//
-//
-//                });
-       // locationTv = findViewById(R.id.lat);
-        // we add permissions we need to request location of the users
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
 
@@ -130,7 +98,6 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
             }
         }
 
-        // we build google api client
         googleApiClient = new GoogleApiClient.Builder(this).
                 addApi(LocationServices.API).
                 addConnectionCallbacks(this).
@@ -168,7 +135,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
                 }
                 Log.d("TAG", "after execution"+resultNew.toString());
 
-                Intent intent = new Intent(LatlngActivity.this, MapsDisplay.class);
+                Intent intent = new Intent(LatlngActivity.this, MapsResultActivity.class);
                 intent.putExtra("result",(Serializable) resultNew);
                 Log.d("TAG", "RESULT IS"+ resultNew.toString());
                 startActivity(intent);
@@ -344,6 +311,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
     private void requestPermission(){
         ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, 1);
     }
+
     protected class ParseJSON extends AsyncTask<Void, Void, ArrayList<HashMap<String, String>>> {
         @Override
         protected void onPreExecute() {
