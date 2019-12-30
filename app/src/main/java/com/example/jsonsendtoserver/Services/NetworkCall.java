@@ -1,7 +1,5 @@
 package com.example.jsonsendtoserver.Services;
 
-import android.util.Log;
-
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,19 +11,16 @@ public class NetworkCall {
     String data = "";
 
     HttpURLConnection httpURLConnection = null;
-    String makeServiceCall(String url) {
+    public String makeServiceCall(String url) {
         try {
             URL callUrl = new URL (url);
             httpURLConnection = (HttpURLConnection) callUrl.openConnection();
             //make httpurlconnection object by casting url object to it. This is where the connection opens to url.
             httpURLConnection.setRequestMethod("POST");    // post request
 
-
             httpURLConnection.setDoOutput(true);          // connection outputs - true
 
-
            // Log.d("test", params[0]);
-
 
             DataOutputStream wr = new DataOutputStream(httpURLConnection.getOutputStream());
             //make dataoutputstream using getOutputStream, we are going to write to it

@@ -3,4 +3,12 @@
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_maps_display">Map</string>
     <string name="title_activity_get_time">GetTime</string>
+    <string name="title_activity_maps_result">MapsResultActivity</string>
+    <string name="title_trip">Trip Plan</string>
+    <string name="title_maps">Maps</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="sample_time_estimated">est 1.0 hours</string>
+    <string name="sample_place">Musuem</string>
+    <string name="sample_timetaken">20 minutes approx</string>
+
 </resources>

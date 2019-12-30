@@ -9,19 +9,18 @@
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="616dp"
+        android:layout_height="593dp"
         tools:context=".MapsDisplay" />
 
     <TextView
         android:id="@+id/infotext"
         android:layout_width="match_parent"
-        android:layout_height="32dp"
-        android:layout_weight="50" />
+        android:layout_height="32dp" />
 
     <Button
         android:id="@+id/nextButton"
         android:layout_width="match_parent"
-        android:layout_height="63dp"
+        android:layout_height="wrap_content"
         android:text="Next" />
 
     <EditText

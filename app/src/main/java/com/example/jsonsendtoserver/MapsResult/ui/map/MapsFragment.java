@@ -1,10 +1,12 @@
-package com.example.jsonsendtoserver;
+package com.example.jsonsendtoserver.MapsResult.ui.map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 
 import android.Manifest;
@@ -18,13 +20,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
 import android.app.ProgressDialog;
 import android.graphics.Color;
 
+import com.example.jsonsendtoserver.R;
 import com.example.jsonsendtoserver.Services.DataParser;
 import com.example.jsonsendtoserver.Services.NetworkCall;
 import com.google.android.gms.common.ConnectionResult;
@@ -56,12 +61,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 
-public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
+public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     Location mLastLocation;
     Marker mCurrLocationMarker;
-    private static final String TAG = MapsDisplay.class.getSimpleName();
+    private static final String TAG = MapsFragment.class.getSimpleName();
     private GoogleMap mMap;
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
@@ -76,24 +81,29 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
     int markerClickedCount = 0;
     boolean doubleBackToExitPressedOnce = false;
     ArrayList<HashMap<String, String>> latLngPlot;
-    LatLng location;
+
     int timeTaken = 0;
     Boolean nextButtonClicked = false;
     int nextButtonClickedCount = 0;
-    Button nextButton;
-    EditText numBox;
-    SupportMapFragment mapFrag;
     private ArrayList<LatLng> latLngs = new ArrayList<>();
     private ProgressDialog pDialog;
+    private EditText numBox;
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps_display);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        View root = inflater.inflate(R.layout.fragment_home, container, false);
+
+         SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+         if (supportMapFragment == null) {
+             FragmentManager fm = getFragmentManager();
+             FragmentTransaction ft = fm.beginTransaction();
+             supportMapFragment = SupportMapFragment.newInstance();
+             ft.replace(R.id.map,supportMapFragment).commit();
+         }
+
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
 
@@ -106,14 +116,14 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
                         new String[permissionsToRequest.size()]), ALL_PERMISSIONS_RESULT);
             }
         }
-        mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFrag = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
-        googleApiClient = new GoogleApiClient.Builder(this).
+        googleApiClient = new GoogleApiClient.Builder(getActivity()).
                 addApi(LocationServices.API).
                 addConnectionCallbacks(this).
                 addOnConnectionFailedListener(this).build();
 
-        new LoopMarker().execute();
+        return root;
     }
 
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {
@@ -130,7 +140,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
     private boolean hasPermission(String permission) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
+            return getActivity().checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
         }
 
         return true;
@@ -140,7 +150,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        Intent intent = getIntent();
+        Intent intent = getActivity().getIntent();
         Log.d("TAG", "NEW INTENT");
         latLngPlot = (ArrayList<HashMap<String, String>>) intent.getSerializableExtra("result");
         String log = latLngPlot.toString();
@@ -162,12 +172,14 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
             LatLng location = new LatLng(latDouble, lngDouble);
 
             Log.e(TAG, name);
-
-<<<<<<< HEAD
-            mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
-=======
             mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
->>>>>>> routeCreated
+            if (count == 0) {
+
+                mMap.setBuildingsEnabled(true);
+                mMap.setIndoorEnabled(true);
+            }
+
+            mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
             mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
 
@@ -177,71 +189,12 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
             latLngs.add(location);
         }
 
-        nextButton = (Button) findViewById(R.id.nextButton);
-        numBox = (EditText) findViewById(R.id.numBox);
-        nextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                nextButtonClicked = true;
-
-                if (nextButtonClickedCount == latLngPlot.size()) {
-                    nextButtonClickedCount = 0;
-                }
-
-                Log.d("BUTTON CLICKED", nextButtonClickedCount + "times");
-                HashMap<String, String> resultHashMap = latLngPlot.get(nextButtonClickedCount);
-
-                String name = resultHashMap.get("name");
-                String lng = resultHashMap.get("lng");
-                String lat = resultHashMap.get("lat");
-                String countToString = resultHashMap.get("count");
-
-
-                Double latDouble = Double.parseDouble(lat);
-                Double lngDouble = Double.parseDouble(lng);
-                int count = Integer.parseInt(countToString);
-
-<<<<<<< HEAD
-                    Log.e(TAG, name);
-                mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
-
-                    nextButtonClickedCount++;
-                    nextButtonClicked = true;
-=======
-                LatLng location = new LatLng(latDouble, lngDouble);
-
-                nextButtonClickedCount++;
-                nextButtonClicked = true;
->>>>>>> routeCreated
-
-                nextButton.setVisibility(View.INVISIBLE);
-
-                swapButtonAndInput(nextButton, numBox);
-
-                numBox.setOnKeyListener(new View.OnKeyListener() {
-                    public boolean onKey(View v, int keyCode, KeyEvent event) {
-                        // If the event is a key-down event on the "enter" button
-                        if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                                (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                            timeTaken = Integer.parseInt(numBox.getText().toString());
-                            new SendDeviceDetails().execute("https://201.team/time.php/?timespent=" + timeTaken);
-
-                            swapButtonAndInput(nextButton, numBox);
-                            nextButton.setVisibility(View.VISIBLE);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-                mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
-            }
-        });
-
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15));
                 marker.showInfoWindow();
+                showAlertDialogButtonClicked();
                 if (markerClickedCount == 0) {
                     setMarkerBegin = true;
                 }
@@ -261,6 +214,68 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
             }
         });
         mMap.getUiSettings().setZoomControlsEnabled(true);
+
+        new LoopMarker().execute();
+    }
+
+    public void showAlertDialogButtonClicked() {
+        // create an alert builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Time Suggestion");
+        final View customLayout = getLayoutInflater().inflate(R.layout.alertdialog, null);
+        builder.setView(customLayout);
+        builder.setPositiveButton("Next", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                 numBox =  customLayout.findViewById(R.id.numBox);
+                nextButtonClicked = true;
+
+                if (nextButtonClickedCount == latLngPlot.size()) {
+                    nextButtonClickedCount = 0;
+                }
+
+                Log.d("BUTTON CLICKED", nextButtonClickedCount + "times");
+                HashMap<String, String> resultHashMap = latLngPlot.get(nextButtonClickedCount);
+
+                String name = resultHashMap.get("name");
+                String lng = resultHashMap.get("lng");
+                String lat = resultHashMap.get("lat");
+                String countToString = resultHashMap.get("count");
+
+
+                Double latDouble = Double.parseDouble(lat);
+                Double lngDouble = Double.parseDouble(lng);
+                int count = Integer.parseInt(countToString);
+
+                LatLng location = new LatLng(latDouble, lngDouble);
+
+                nextButtonClickedCount++;
+                nextButtonClicked = true;
+
+//                nextButton.setVisibility(View.INVISIBLE);
+//
+//                swapButtonAndInput(nextButton, numBox);
+
+                numBox.setOnKeyListener(new View.OnKeyListener() {
+                    public boolean onKey(View v, int keyCode, KeyEvent event) {
+                        // If the event is a key-down event on the "enter" button
+                        if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                                (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                            timeTaken = Integer.parseInt(numBox.getText().toString());
+                            new SendDeviceDetails().execute("https://201.team/time.php/?timespent=" + timeTaken);
+
+//                            swapButtonAndInput(nextButton, numBox);
+//                            nextButton.setVisibility(View.VISIBLE);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     public void swapButtonAndInput(Button b, EditText e) {
@@ -276,7 +291,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
     }
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         super.onStart();
 
         if (googleApiClient != null) {
@@ -306,8 +321,8 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
         @Override
         protected String doInBackground(String... params) { //what you want done in the thread
 
-                NetworkCall networkCall = new NetworkCall();
-                return networkCall.makeServiceCall(params[0]);
+            NetworkCall networkCall = new NetworkCall();
+            return networkCall.makeServiceCall(params[0]);
         }
 
         @Override
@@ -320,9 +335,9 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this,
+        if (ActivityCompat.checkSelfPermission(this.getContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this,
+                && ActivityCompat.checkSelfPermission(this.getContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -351,11 +366,11 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
         locationRequest.setInterval(UPDATE_INTERVAL);
         locationRequest.setFastestInterval(FASTEST_INTERVAL);
 
-        if (ActivityCompat.checkSelfPermission(this,
+        if (ActivityCompat.checkSelfPermission(this.getContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this,
+                && ActivityCompat.checkSelfPermission(this.getContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "You need to enable permissions to display location !", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this.getContext(), "You need to enable permissions to display location !", Toast.LENGTH_SHORT).show();
         }
 
         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
@@ -402,7 +417,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
                 if (permissionsRejected.size() > 0) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (shouldShowRequestPermissionRationale(permissionsRejected.get(0))) {
-                            new AlertDialog.Builder(MapsDisplay.this).
+                            new AlertDialog.Builder(MapsFragment.this.getContext()).
                                     setMessage("These permissions are mandatory to get your location. You need to allow them.").
                                     setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                         @Override
@@ -429,7 +444,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
                 timeTaken = data.getIntExtra("result", 0);
@@ -451,7 +466,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
         protected void onPreExecute() {
             super.onPreExecute();
 
-            pDialog = new ProgressDialog(MapsDisplay.this);
+            pDialog = new ProgressDialog(MapsFragment.this.getContext());
             pDialog.setIndeterminate(false);
             pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             pDialog.setMessage("Please wait...");
