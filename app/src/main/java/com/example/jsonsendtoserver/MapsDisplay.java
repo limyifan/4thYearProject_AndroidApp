@@ -83,10 +83,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
     Marker mCurrLocationMarker;
     private static final String TAG = MapsDisplay.class.getSimpleName();
     private GoogleMap mMap;
-    private Location location;
-    private TextView locationTv;
     private GoogleApiClient googleApiClient;
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private LocationRequest locationRequest;
     private static final long UPDATE_INTERVAL = 5000, FASTEST_INTERVAL = 5000; // = 5 seconds
     // lists for permissions
@@ -99,11 +96,10 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
     Boolean setMarkerBegin = false;
     int markerClickedCount = 0;
     boolean doubleBackToExitPressedOnce = false;
-    static final int GET_TIME_REQUEST = 1;
+
     ArrayList<HashMap<String, String>> latLngPlot;
 
-    private String latitude;
-    private String longitude;
+
     int timeTaken = 0;
     Boolean nextButtonClicked = false;
     int nextButtonClickedCount = 0;
@@ -204,8 +200,8 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
             latLngs.add(location);
         }
 
-        nextButton = (Button) findViewById(R.id.nextButton);
-        numBox = (EditText) findViewById(R.id.numBox);
+        nextButton = findViewById(R.id.nextButton);
+        numBox = findViewById(R.id.numBox);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -383,21 +379,6 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
             return;
         }
 
-        // Permissions ok, we get last location
-        location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-
-//        if (location != null) {
-//
-//            latitude= String.valueOf(location.getLatitude());
-//            longitude= String.valueOf(location.getLongitude());
-//
-//            Log.d(TAG,"latitude"+latitude+"");
-//            Log.d(TAG,"latitude"+longitude+"");
-//            LatLng mylocation = new LatLng( Double.parseDouble(latitude), Double.parseDouble(longitude));
-//            Log.d("TAG", "ur location" + latitude);
-//            mMap.addMarker(new MarkerOptions().position(mylocation).title("You are Here"));
-//        }
-
         startLocationUpdates();
     }
 
@@ -427,32 +408,29 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public void onLocationChanged(Location location) {
-//        if (location != null) {
-//            latitude= String.valueOf(location.getLatitude());
-//            longitude= String.valueOf(location.getLongitude());
-//            LatLng mylocation = new LatLng( Double.parseDouble(latitude), Double.parseDouble(longitude));
-//            mMap.addMarker(new MarkerOptions().position(mylocation).title("You are Here"));
-//            Log.d(TAG,"changed"+latitude+"");
-//            Log.d(TAG,"changed"+longitude+"");}
-        mLastLocation = location;
-        if (mCurrLocationMarker != null) {
-            mCurrLocationMarker.remove();
-        }
 
-        //Place current location marker
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.title("Current Position");
-        Log.d(TAG,"location changed"+latLng+"");
 
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-        mCurrLocationMarker = mMap.addMarker(markerOptions);
+     mLastLocation = location;
 
-        //move map camera
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,13));
+     if (mCurrLocationMarker != null) {
+         mCurrLocationMarker.remove();
 
-            }
+     }
+     //Place current location marker
+     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+     MarkerOptions markerOptions = new MarkerOptions();
+     markerOptions.position(latLng);
+     markerOptions.title("Current Position");
+     Log.d(TAG, "location changed" + latLng + "");
+
+     markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+     mCurrLocationMarker = mMap.addMarker(markerOptions);
+
+     //move map camera
+     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
+
+
+ }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
