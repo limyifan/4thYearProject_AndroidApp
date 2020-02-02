@@ -24,5 +24,6 @@ public class LatlngActivityTest {
 
     @Test
     public void onLocationChanged() {
+assertTrue(true);
     }
 }
