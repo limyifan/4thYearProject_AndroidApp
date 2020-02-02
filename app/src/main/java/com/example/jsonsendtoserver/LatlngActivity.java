@@ -53,7 +53,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private String TAG = LatlngActivity.class.getSimpleName();
      NetworkCall networkCall;
-    private static String url = "https://www.201.team/api/placebasic.php/";
+    private static String url = "https://201.team/api/randomroute/getroute.php/";
     private ProgressDialog pDialog;
     String perf;
     TextView lat;
@@ -110,14 +110,14 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
         food.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                perf = "food";
+                perf = "Food";
             }
         });
 
         museum.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                perf = "museum";
+                perf = "Museum";
             }
         });
 
@@ -328,6 +328,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
             HttpHandler handler = new HttpHandler();
 
             String jsonString = handler.makeServiceCall(url+"?lat="+latitude+"&lng="+longitude+"&pref1="+perf);
+            Log.d(TAG, "Response from url: " + url+"?lat="+latitude+"&lng="+longitude+"&pref1="+perf);
             Log.d(TAG, "Response from url: " + jsonString);
             if (jsonString != null){
                 try {
@@ -341,7 +342,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
                         JSONObject c = candidates.getJSONObject(i);
                         String lat = c.getString("latitude");
                         String lng = c.getString("longitude");
-                        String name = c.getString("name");
+                        String name = c.getString("place_name");
                         String countToString = Integer.toString(count);
 
                         candidate.put("name", name);
