@@ -1,34 +1,22 @@
 package com.example.jsonsendtoserver;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Observable;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.util.Log;
-import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.example.jsonsendtoserver.Services.HttpHandler;
+import com.example.jsonsendtoserver.Services.NetworkCall;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,30 +29,22 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 
-import rx.Observer;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 public class MapsActivity extends AppCompatActivity {
 
     private String TAG = MapsActivity.class.getSimpleName();
     NetworkCall networkCall;
-    private static String url = "https://www.201.team/tripit-http.php/?location=";
+    private static String url = "https://www.201.team/tripit-http.php/";
     private ProgressDialog pDialog;
     private GoogleMap mMap;     
     ArrayList<HashMap<String, String>> candidateList;
@@ -74,23 +54,6 @@ public class MapsActivity extends AppCompatActivity {
 
     ArrayList<HashMap<String, String>> result = new ArrayList<>();
    static ArrayList<HashMap<String, String>> resultNew = new ArrayList<>();
-
-   /* Observer<String> placesObserver =new Observer<String>() {
-        @Override
-        public void onCompleted() {
-            Log.d("onCompleted","Completed");
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            Log.d("onError","onError");
-        }
-
-        @Override
-        public void onNext(String s) {
-            Log.d("onNext",s);
-        }
-    };*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,14 +66,6 @@ public class MapsActivity extends AppCompatActivity {
 
         networkCall = new NetworkCall();
 
-       /* pb = (ProgressBar) findViewById(R.id.progressBar1);
-        pb.setVisibility(View.INVISIBLE);
-
-        editLocation = (EditText) findViewById(R.id.editTextLocation);*/
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        //   SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        //    mapFragment.getMapAsync(this);
         Button goButton = (Button) findViewById(R.id.goButton);
         goButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -133,9 +88,6 @@ public class MapsActivity extends AppCompatActivity {
                 }
                 Log.d("TAG", "after execution"+resultNew.toString());
 
-           /*     getPlacesRequest().subscribeOn(Schedulers.newThread())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(placesObserver);*/
            Intent intent = new Intent(MapsActivity.this, MapsDisplay.class);
           intent.putExtra("result",(Serializable) resultNew);
           Log.d("TAG", "RESULT IS"+resultNew.toString());
@@ -143,29 +95,7 @@ public class MapsActivity extends AppCompatActivity {
             }
 
         });
-
-
     }
-
-/*
-    public Observable<String> getPlacesRequest(){
-
-        return Observable.create(new Observable.OnSubscribe<String>() {
-          //  @Override
-            public void call(Subscriber<? super String> subscriber) {
-                try {
-                    String response = networkCall.makeServiceCall("https://www.201.team/tripit-http.php/?location=" +
-                            location + "&time=" + time);
-                    subscriber.onNext(response);
-                    subscriber.onCompleted();
-                }catch (Exception e) {
-                    subscriber.onError(e);
-                }
-            }
-        });
-    }*/
-
-
 
     private class SendDeviceDetails extends AsyncTask<String, Void, String> {
 
@@ -181,12 +111,9 @@ public class MapsActivity extends AppCompatActivity {
                 //make httpurlconnection object by casting url object to it. This is where the connection opens to url.
                 httpURLConnection.setRequestMethod("POST");    // post request
 
-
                 httpURLConnection.setDoOutput(true);          // connection outputs - true
 
-
                 Log.d("test", params[0]);
-
 
                 DataOutputStream wr = new DataOutputStream(httpURLConnection.getOutputStream());
                 //make dataoutputstream using getOutputStream, we are going to write to it
@@ -214,11 +141,8 @@ public class MapsActivity extends AppCompatActivity {
 
                 }
             }
-
             return data;
         }
-
-
 
         @Override
         protected void onPostExecute(String result) {
@@ -227,6 +151,7 @@ public class MapsActivity extends AppCompatActivity {
             new ParseJSON().execute();
         }
     }
+
     protected class ParseJSON extends AsyncTask<Void, Void, ArrayList<HashMap<String, String>>> {
         @Override
         protected void onPreExecute() {
@@ -236,7 +161,6 @@ public class MapsActivity extends AppCompatActivity {
             pDialog.setMessage("Please wait...");
             pDialog.setCancelable(false);
             pDialog.show();
-
         }
 
         @Override
@@ -245,7 +169,8 @@ public class MapsActivity extends AppCompatActivity {
 
             HashMap<String, String> candidate = new HashMap<>();
 
-            String jsonString = handler.makeServiceCall(url + location + "&time=" + time);
+            //String jsonString = handler.makeServiceCall(url +"?lat="+ location + "&time=" + time);
+            String jsonString = handler.makeServiceCall(url+"?lat=53.9967788&lng=-6.4042121&time="+time);
             jsonString = jsonString.replace("You are in "+location+ ". You have "+time+" minutes."," ");
             Log.d(TAG, "Response from url: " + jsonString);
             if (jsonString != null){
@@ -270,9 +195,6 @@ public class MapsActivity extends AppCompatActivity {
                                         double vSWLat = southwest.getDouble("lat");
                                         double vSWLng = southwest.getDouble("lng");
                             String name = c.getString("name");
-
-
-
 
                         candidate.put("name", name);
                         candidate.put("lat", lat);
@@ -309,9 +231,7 @@ public class MapsActivity extends AppCompatActivity {
             // Dismiss the progress dialog
             if (pDialog.isShowing())
                 pDialog.dismiss();
-            /**
-             * Updating parsed JSON data into ListView
-             * */
+
             ListAdapter adapter = new SimpleAdapter( //join together UI with DATA
                     MapsActivity.this, //reference to this activity
                     result,                              // list of Map objects| data
@@ -319,34 +239,13 @@ public class MapsActivity extends AppCompatActivity {
                     new String[]{"name", "lat", "lng"},  // key values used in the map //     match up key values from
                     new int[]{R.id.name, R.id.lat, R.id.lng});  // name of target TextViews   source data to name of fields //puts into view called "name, email"
             // in list
-            listView.setAdapter(adapter);   // connect adapter to ListView                         from map nbeing supplied, there is something called "name"
+            listView.setAdapter(adapter);
 
         }
     }
 
-
-
-   /* @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
-        // onClickBtn(R.layout.activity_maps);
-       *//* JSONObject request = new JSONObject();
-        try {
-            request.put("location", location);
-            request.put("time", time);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            request.toString()
-        }*//*
-
-
-    }*/
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
 }
