@@ -10,7 +10,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,10 +22,8 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 
-import android.app.ProgressDialog;
 import android.graphics.Color;
 
 import com.example.jsonsendtoserver.R;
@@ -50,7 +47,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import android.os.Handler;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -77,16 +73,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     private ArrayList<String> permissions = new ArrayList<>();
     // integer for permissions results request
     private static final int ALL_PERMISSIONS_RESULT = 1011;
-    Boolean setMarkerBegin = false;
-    int markerClickedCount = 0;
-    boolean doubleBackToExitPressedOnce = false;
     ArrayList<HashMap<String, String>> latLngPlot;
 
-    int timeTaken = 0;
     Boolean nextButtonClicked = false;
     int nextButtonClickedCount = 0;
     private ArrayList<LatLng> latLngs = new ArrayList<>();
-    private ProgressDialog pDialog;
     private EditText numBox;
 
 
@@ -94,7 +85,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        View root = inflater.inflate(R.layout.fragment_home, container, false);
+        View root = inflater.inflate(R.layout.fragment_maps, container, false);
 
          SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
          if (supportMapFragment == null) {
@@ -156,7 +147,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         String log = latLngPlot.toString();
         Log.d("TAG", "LATLNGPLOT IS" + log);
 
-        for (int i = 0; i < latLngPlot.size(); i++) {
+        int length = latLngPlot.size() - 1 > 5 ? 5 : latLngPlot.size() - 1;
+        for (int i = 0; i < length; i++) {
+        //for (int i = 0; i < latLngPlot.size(); i++) {
 
             HashMap<String, String> resultHashMap = latLngPlot.get(i);
 
@@ -164,7 +157,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             String lng = resultHashMap.get("lng");
             String lat = resultHashMap.get("lat");
             String countToString = resultHashMap.get("count");
-            Log.d("TAG", "LAT IS" + lat);
             Double latDouble = Double.parseDouble(lat);
             Double lngDouble = Double.parseDouble(lng);
             int count = Integer.parseInt(countToString);
@@ -172,21 +164,32 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             LatLng location = new LatLng(latDouble, lngDouble);
 
             Log.e(TAG, name);
-            mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
-            if (count == 0) {
 
+            if(i==0) {
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(location);
+                markerOptions.title(name);
+
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                mCurrLocationMarker = mMap.addMarker(markerOptions);
+            }
+            else {
+                mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
+            }
+
+            if (count == 0) {
                 mMap.setBuildingsEnabled(true);
                 mMap.setIndoorEnabled(true);
             }
 
-            mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
-            mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
+            mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 13)));
 
             mMap.setBuildingsEnabled(true);
             mMap.setIndoorEnabled(true);
 
             latLngs.add(location);
+
         }
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
@@ -194,23 +197,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             public boolean onMarkerClick(Marker marker) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15));
                 marker.showInfoWindow();
-                showAlertDialogButtonClicked();
-                if (markerClickedCount == 0) {
-                    setMarkerBegin = true;
-                }
-                if (doubleBackToExitPressedOnce) {
-                    Log.d("DOUBLECLICK", "DOUBLE CLICK PRESSED");
-                } else {
-                    doubleBackToExitPressedOnce = true;
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            doubleBackToExitPressedOnce = false;
-                        }
-                    }, 2000);
-                }
-                markerClickedCount++;
                 return true;
+            }
+        });
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                showAlertDialogButtonClicked();
             }
         });
         mMap.getUiSettings().setZoomControlsEnabled(true);
@@ -242,30 +235,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 String lat = resultHashMap.get("lat");
                 String countToString = resultHashMap.get("count");
 
-
                 Double latDouble = Double.parseDouble(lat);
                 Double lngDouble = Double.parseDouble(lng);
-                int count = Integer.parseInt(countToString);
 
                 LatLng location = new LatLng(latDouble, lngDouble);
-
-                nextButtonClickedCount++;
-                nextButtonClicked = true;
-
-//                nextButton.setVisibility(View.INVISIBLE);
-//
-//                swapButtonAndInput(nextButton, numBox);
 
                 numBox.setOnKeyListener(new View.OnKeyListener() {
                     public boolean onKey(View v, int keyCode, KeyEvent event) {
                         // If the event is a key-down event on the "enter" button
                         if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                                 (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                            timeTaken = Integer.parseInt(numBox.getText().toString());
-                            new SendDeviceDetails().execute("https://201.team/time.php/?timespent=" + timeTaken);
+                            int timeTaken = Integer.parseInt(numBox.getText().toString());
+                            SendDeviceDetails("https://201.team/time.php/?timespent=" + timeTaken);
 
-//                            swapButtonAndInput(nextButton, numBox);
-//                            nextButton.setVisibility(View.VISIBLE);
                             return true;
                         }
                         return false;
@@ -276,18 +258,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         });
         AlertDialog dialog = builder.create();
         dialog.show();
-    }
-
-    public void swapButtonAndInput(Button b, EditText e) {
-        float buttonPosX = b.getX();
-        float buttonPosY = b.getY();
-        float numPosX = e.getX();
-        float numPosY = e.getY();
-
-        e.setX(buttonPosX);
-        e.setY(buttonPosY);
-        b.setX(numPosX);
-        b.setY(numPosY);
     }
 
     @Override
@@ -302,35 +272,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onPause() {
         super.onPause();  // Always call the superclass method first
-
         if (googleApiClient != null && googleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
             googleApiClient.disconnect();
         }
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
     }
 
-    public class SendDeviceDetails extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... params) { //what you want done in the thread
-
+    public String SendDeviceDetails(String url) {
             NetworkCall networkCall = new NetworkCall();
-            return networkCall.makeServiceCall(params[0]);
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            Log.e("TAG", result); // receiving response code from server
-
-        }
+            return networkCall.makeServiceCall(url);
     }
 
     @Override
@@ -341,21 +296,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-
-        // Permissions ok, we get last location
-        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-
-//        if (location != null) {
-//
-//            latitude= String.valueOf(location.getLatitude());
-//            longitude= String.valueOf(location.getLongitude());
-//
-//            Log.d(TAG,"latitude"+latitude+"");
-//            Log.d(TAG,"latitude"+longitude+"");
-//            LatLng mylocation = new LatLng( Double.parseDouble(latitude), Double.parseDouble(longitude));
-//            Log.d("TAG", "ur location" + latitude);
-//            mMap.addMarker(new MarkerOptions().position(mylocation).title("You are Here"));
-//        }
 
         startLocationUpdates();
     }
@@ -442,49 +382,26 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1) {
-            if (resultCode == Activity.RESULT_OK) {
-                timeTaken = data.getIntExtra("result", 0);
-
-                Log.d("DOUBLECLICK", "LINE BEFORE TIMETAKEN");
-                //timeTaken = Integer.parseInt(result);
-                Log.d("TAG", "Time Taken is" + timeTaken);
-            }
-            if (resultCode == Activity.RESULT_CANCELED) {
-                Log.d("TAG", "NO RESULT");
-            }
-        }
-
-    }
-
-
     private class LoopMarker extends AsyncTask<Void, Void, ArrayList<PolylineOptions>> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
-            pDialog = new ProgressDialog(MapsFragment.this.getContext());
-            pDialog.setIndeterminate(false);
-            pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            pDialog.setMessage("Please wait...");
-            pDialog.show();
-            pDialog.dismiss();
         }
 
         @Override
         protected ArrayList<PolylineOptions> doInBackground(Void... stgr) {
             ArrayList<PolylineOptions> polylineOptions = new ArrayList<>();
 
-            for (int i = 0; i < latLngs.size() - 1; i++) {
-
+            int length = latLngs.size() - 1 > 5 ? 5 : latLngs.size() - 1;
+            for (int i = 0; i < length; i++) {
                 String origin = latLngs.get(i).latitude + "," + latLngs.get(i).longitude;
                 String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
-
-                polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw"));
-
+                if (i==0) {
+                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(Color.BLUE));
+                }
+                else {
+                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(Color.GRAY));
+                 }
             }
             return polylineOptions;
         }
@@ -492,10 +409,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         @Override
         protected void onPostExecute(ArrayList<PolylineOptions> result) {
             super.onPostExecute(result);
-
-            if (pDialog.isShowing()) {
-                pDialog.dismiss();
-            }
 
             if (result != null) {
                 for (int i = 0; i < result.size(); i++) {
@@ -515,7 +428,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             return parserTaskToPolyLine(data);
 
         } catch (Exception e) {
-            Log.d("Background Task", e.toString());
+            Log.e("Background Task", e.toString());
         }
         return null;
     }
@@ -524,10 +437,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         JSONObject jObject;
         List<List<HashMap<String, String>>> routes = null;
         PolylineOptions lineOptions = new PolylineOptions();
+
+        Log.d(TAG,"jsonData " +jsonData);
         try {
             jObject = new JSONObject(jsonData);
             DataParser parser = new DataParser();
-            Log.d("parserTaskToPolyLine", parser.toString());
 
             routes = parser.parse(jObject);
 
@@ -544,7 +458,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 }
                 lineOptions.addAll(points);
                 lineOptions.width(10);
-                lineOptions.color(Color.BLUE);
             }
         } catch (Exception e) {
             Log.e("parserTaskToPolyLine", e.toString());
