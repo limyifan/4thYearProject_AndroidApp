@@ -6,15 +6,15 @@
     app:startDestination="@+id/navigation_home">
 
     <fragment
-        android:id="@+id/navigation_home"
+        android:id="@+id/navigation_maps"
         android:name="com.example.jsonsendtoserver.MapsResult.ui.map.MapsFragment"
-        android:label="@string/title_trip"
-        tools:layout="@layout/fragment_home" />
+        android:label="@string/title_maps"
+        tools:layout="@layout/fragment_maps" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
+        android:id="@+id/navigation_trip"
         android:name="com.example.jsonsendtoserver.MapsResult.ui.tripPlan.TripPlanFragment"
-        android:label="@string/title_maps"
-        tools:layout="@layout/fragment_dashboard" />
+        android:label="@string/title_trip"
+        tools:layout="@layout/fragment_trip" />
 
 </navigation>

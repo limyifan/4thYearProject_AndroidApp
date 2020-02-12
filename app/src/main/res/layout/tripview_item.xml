@@ -1,16 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/mtrl_card_spacing"
+        android:layout_marginTop="@dimen/mtrl_card_spacing"
+        android:layout_marginRight="@dimen/mtrl_card_spacing"
+        card_view:cardCornerRadius="10dp"
+        card_view:cardElevation="20dp"
+        app:strokeColor="@color/LightSlateGray"
+        app:strokeWidth="2.5dp"
+        >
+
+        <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginLeft="8dp"
-        android:background="@drawable/background">
+        android:padding="8dp">
 
         <ImageView
             android:layout_width="match_parent"
@@ -19,27 +31,32 @@
 
         <TextView
             android:drawableLeft="@drawable/ic_place_black_24dp"
+            style="@style/TextAppearance.AppCompat.Title"
             android:id="@+id/placeName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/title_trip"
-            android:textSize="20sp" />
+
+            android:text="@string/title_trip" />
 
         <TextView
             android:drawableLeft="@drawable/ic_apps_black_24dp"
             android:id="@+id/placeCategory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            style="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"
+            android:textColor="@color/LightSlateGray"
             android:layout_marginTop="8dp"
-            android:text="@string/sample_place"
-            android:textSize="15sp" />
+            android:text="@string/sample_place"/>
 
         <TextView
             android:drawableLeft="@drawable/ic_timer_black_24dp"
             android:id="@+id/timeEstimated"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/LightSlateGray"
+            style="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"
             android:text="@string/sample_time_estimated"
             android:textSize="15sp" />
 
@@ -50,6 +67,7 @@
             android:weightSum="2">
 
             <Button
+                style="@style/TextAppearance.MaterialComponents.Button"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -65,6 +83,8 @@
 
     </LinearLayout>
 
+    </com.google.android.material.card.MaterialCardView>
+
     <View
         android:id="@+id/view1"
         android:layout_width="4dp"
@@ -72,12 +92,18 @@
         android:layout_gravity="center"
         android:background="@color/Green" />
 
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        card_view:cardCornerRadius="10dp"
+        app:strokeColor="@color/LightSlateGray"
+        app:strokeWidth="2.5dp">
+
     <LinearLayout
         android:id="@+id/timeTaken"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:background="@drawable/background"
         android:orientation="horizontal"
         android:padding="8dp">
 
@@ -88,6 +114,8 @@
             android:text="@string/sample_timetaken" />
 
     </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <View
         android:id="@+id/view2"
