@@ -10,7 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/mtrl_card_spacing"
-        android:layout_marginTop="@dimen/mtrl_card_spacing"
         android:layout_marginRight="@dimen/mtrl_card_spacing"
         card_view:cardCornerRadius="10dp"
         card_view:cardElevation="20dp"
@@ -25,6 +24,7 @@
         android:padding="8dp">
 
         <ImageView
+            android:id="@+id/coverImg"
             android:layout_width="match_parent"
             android:layout_height="85dp"
             android:background="@drawable/mapbg" />
@@ -38,6 +38,16 @@
             android:layout_marginTop="8dp"
 
             android:text="@string/title_trip" />
+
+            <RatingBar
+                android:id="@+id/ratingBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:isIndicator="true"
+                android:clickable="false"
+                android:focusableInTouchMode="false"
+                android:focusable="false"
+                android:numStars="5"/>
 
         <TextView
             android:drawableLeft="@drawable/ic_apps_black_24dp"
@@ -65,19 +75,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:weightSum="2">
-
-            <Button
-                style="@style/TextAppearance.MaterialComponents.Button"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Favourite"/>
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Detail"/>
 
         </LinearLayout>
 
@@ -123,4 +120,5 @@
         android:layout_height="25dp"
         android:layout_gravity="center"
         android:background="@color/Green" />
+
 </LinearLayout>

@@ -147,9 +147,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         String log = latLngPlot.toString();
         Log.d("TAG", "LATLNGPLOT IS" + log);
 
-        int length = latLngPlot.size() - 1 > 5 ? 5 : latLngPlot.size() - 1;
-        for (int i = 0; i < length; i++) {
-        //for (int i = 0; i < latLngPlot.size(); i++) {
+//        int length = latLngPlot.size() - 1 > 5 ? 5 : latLngPlot.size() - 1;
+//        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < latLngPlot.size(); i++) {
 
             HashMap<String, String> resultHashMap = latLngPlot.get(i);
 

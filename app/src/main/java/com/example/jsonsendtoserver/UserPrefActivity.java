@@ -25,6 +25,8 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -85,9 +87,32 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
         networkCall = new NetworkCall();
 
         final ChipGroup prefSelectList = findViewById(R.id.tvItemSelected);
-
+        SeekBar seekBar = findViewById(R.id.timeSeekbar);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        final TextView textView = findViewById(R.id.timeDisplay);
+
         setSupportActionBar(myToolbar);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int progress = 0;
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progresValue, boolean fromUser) {
+                progress = progresValue;
+                textView.setText(String.valueOf(progress));
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                textView.setText(String.valueOf(progress));
+            }
+        });
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -415,6 +440,8 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     current.put("lat", latitude);
                     current.put("lng", longitude);
                     current.put("count", "0");
+                    current.put("rating","No Rating");
+                    current.put("img","No Photos Provided");
 
                     result.add(current);
 
@@ -425,11 +452,15 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         String lat = c.getString("latitude");
                         String lng = c.getString("longitude");
                         String name = c.getString("place_name");
+                        String img = c.getString("cover_image");
+                        String rating = c.getString("rating");
                         String countToString = Integer.toString(count);
 
                         candidate.put("name", name);
                         candidate.put("lat", lat);
                         candidate.put("lng", lng);
+                        candidate.put("img",img);
+                        candidate.put("rating",rating);
                         candidate.put("count", countToString);
                         count++;
 
@@ -481,6 +512,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
             public void onClick(View v) {
                 entryChipGroup.removeView(chip);
                 pref.remove(text);
+
             }
         });
         return chip;
