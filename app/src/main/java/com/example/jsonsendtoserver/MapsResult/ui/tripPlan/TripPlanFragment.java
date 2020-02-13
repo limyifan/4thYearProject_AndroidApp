@@ -33,7 +33,7 @@ public class TripPlanFragment extends Fragment {
     
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_dashboard, container, false);
+        View root = inflater.inflate(R.layout.fragment_trip, container, false);
 
         tripPlan = root.findViewById(R.id.tripView);
         tripPlan.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));

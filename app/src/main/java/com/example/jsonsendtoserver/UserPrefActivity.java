@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
@@ -14,16 +15,17 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
 import android.util.Log;
 
 import com.example.jsonsendtoserver.MapsResult.MapsResultActivity;
 import com.example.jsonsendtoserver.Services.HttpHandler;
 import com.example.jsonsendtoserver.Services.NetworkCall;
 
+import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,29 +37,28 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
+
 import android.location.Location;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipDrawable;
+import com.google.android.material.chip.ChipGroup;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
-public class LatlngActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
+public class UserPrefActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
-    private String TAG = LatlngActivity.class.getSimpleName();
-     NetworkCall networkCall;
-    private static String url = "https://www.201.team/api/placebasic.php/";
+    private String TAG = UserPrefActivity.class.getSimpleName();
+    NetworkCall networkCall;
+    private static String url = "https://201.team/api/randomroute/getroute.php/";
     private ProgressDialog pDialog;
-    String perf;
-    TextView lat;
-    TextView lng ;
     public Location location;
     private GoogleApiClient googleApiClient;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -70,11 +71,13 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
     // integer for permissions results request
     private static final int ALL_PERMISSIONS_RESULT = 1011;
 
-    private String latitude;
-    private String longitude;
+    private String latitude, longitude;
+    private ArrayList<String> pref = new ArrayList<>();
+    String[] listItems;
+    boolean[] checkedItems;
+    ArrayList<Integer> mUserItems = new ArrayList<>();
 
-    ArrayList<HashMap<String, String>> result = new ArrayList<>();
-    ArrayList<HashMap<String, String>> resultNew = new ArrayList<>();
+    int count = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,14 +85,39 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
         setContentView(R.layout.activity_latlng);
 
         networkCall = new NetworkCall();
-        lat = findViewById(R.id.lat);
-         lng =  findViewById(R.id.lng);
+
+        final ChipGroup prefSelectList = findViewById(R.id.tvItemSelected);
+        SeekBar seekBar = findViewById(R.id.timeSeekbar);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        final TextView textView = findViewById(R.id.timeDisplay);
+
+        setSupportActionBar(myToolbar);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int progress = 0;
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progresValue, boolean fromUser) {
+                progress = progresValue;
+                textView.setText(String.valueOf(progress));
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                textView.setText(String.valueOf(progress));
+            }
+        });
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
 
         permissionsToRequest = permissionsToRequest(permissions);
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (permissionsToRequest.size() > 0) {
@@ -102,22 +130,85 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
                 addApi(LocationServices.API).
                 addConnectionCallbacks(this).
                 addOnConnectionFailedListener(this).build();
-        Button food = findViewById(R.id.food);
-        Button museum = findViewById(R.id.museum);
 
         Button goButton = (Button) findViewById(R.id.goButton);
+        Button prefSelectButton = (Button) findViewById(R.id.prefSelect);
 
-        food.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                perf = "food";
-            }
-        });
+        listItems = getResources().getStringArray(R.array.peferences_choice);
+        checkedItems = new boolean[listItems.length];
 
-        museum.setOnClickListener(new OnClickListener() {
+        prefSelectButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                perf = "museum";
+            public void onClick(View view) {
+                AlertDialog.Builder mBuilder = new AlertDialog.Builder(UserPrefActivity.this);
+                mBuilder.setTitle(R.string.pref_selection);
+                mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
+
+                        count += isChecked ? 1 : -1;
+                        checkedItems[position] = isChecked;
+
+                        if (isChecked) {
+                            if (count > 3) {
+                                Toast.makeText(getApplicationContext(), "Not more than 3 preferences", Toast.LENGTH_LONG).show();
+                                checkedItems[position] = false;
+                                count--;
+                                ((AlertDialog) dialogInterface).getListView().setItemChecked(position, false);
+                            } else {
+                                mUserItems.add(position);
+                            }
+                        } else {
+                            mUserItems.remove((Integer.valueOf(position)));
+                            if (count > 3) {
+                                Toast.makeText(getApplicationContext(), "Not more than 3 preferences", Toast.LENGTH_LONG).show();
+                                checkedItems[position] = false;
+                                count--;
+                                ((AlertDialog) dialogInterface).getListView().setItemChecked(position, false);
+                            }
+                        }
+                    }
+                });
+
+                mBuilder.setCancelable(false);
+                mBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        pref.clear();
+                        prefSelectList.removeAllViews();
+
+                        for (int i = 0; i < mUserItems.size(); i++) {
+                            String item = listItems[mUserItems.get(i)];
+                            final Chip entryChip = getChip(prefSelectList, item);
+                            prefSelectList.addView(entryChip);
+                            pref.add(item);
+                        }
+                    }
+                });
+
+                mBuilder.setNegativeButton(R.string.dismiss_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+                mBuilder.setNeutralButton(R.string.clear_all_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        for (int i = 0; i < checkedItems.length; i++) {
+                            checkedItems[i] = false;
+                            mUserItems.clear();
+                            prefSelectList.removeAllViews();
+                            pref.clear();
+                            count = 0;
+                        }
+                    }
+                });
+
+                AlertDialog mDialog = mBuilder.create();
+                mDialog.show();
             }
         });
 
@@ -125,7 +216,8 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
             @Override
             public void onClick(View v) {
 
-                Log.d("TAG", "before execution"+resultNew.toString());
+                ArrayList<HashMap<String, String>> resultNew = new ArrayList<>();
+                Log.d("TAG", "before execution" + resultNew.toString());
                 try {
                     resultNew = new ParseJSON().execute().get();
                 } catch (ExecutionException e) {
@@ -133,16 +225,17 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                Log.d("TAG", "after execution"+resultNew.toString());
+                Log.d("TAG", "after execution" + resultNew.toString());
 
-                Intent intent = new Intent(LatlngActivity.this, MapsResultActivity.class);
-                intent.putExtra("result",(Serializable) resultNew);
-                Log.d("TAG", "RESULT IS"+ resultNew.toString());
+                Intent intent = new Intent(UserPrefActivity.this, MapsResultActivity.class);
+                intent.putExtra("result", (Serializable) resultNew);
+                Log.d("TAG", "RESULT IS" + resultNew.toString());
                 startActivity(intent);
             }
 
         });
     }
+
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {
         ArrayList<String> result = new ArrayList<>();
 
@@ -177,7 +270,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
         super.onResume();
 
         if (!checkPlayServices()) {
-            Log.d(TAG,"You need to install Google Play Services to use the App properly");
+            Log.d(TAG, "You need to install Google Play Services to use the App properly");
         }
     }
 
@@ -186,7 +279,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
         super.onPause();
 
         // stop location updates
-        if (googleApiClient != null  &&  googleApiClient.isConnected()) {
+        if (googleApiClient != null && googleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
             googleApiClient.disconnect();
         }
@@ -213,7 +306,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
     public void onConnected(@Nullable Bundle bundle) {
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                &&  ActivityCompat.checkSelfPermission(this,
+                && ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -223,12 +316,10 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
 
         if (location != null) {
 
-            latitude= String.valueOf(location.getLatitude());
-                           longitude= String.valueOf(location.getLongitude());
-                            lat.setText(latitude);
-                           lng.setText(longitude);
-                      Log.d(TAG,"latitude"+latitude+"");
-                           Log.d(TAG,"latitude"+longitude+"");
+            latitude = String.valueOf(location.getLatitude());
+            longitude = String.valueOf(location.getLongitude());
+            Log.d(TAG, "latitude" + latitude + "");
+            Log.d(TAG, "latitude" + longitude + "");
         }
 
         startLocationUpdates();
@@ -242,7 +333,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
 
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                &&  ActivityCompat.checkSelfPermission(this,
+                && ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "You need to enable permissions to display location !", Toast.LENGTH_SHORT).show();
         }
@@ -261,17 +352,16 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
     @Override
     public void onLocationChanged(Location location) {
         if (location != null) {
-            latitude= String.valueOf(location.getLatitude());
-            longitude= String.valueOf(location.getLongitude());
-            lat.setText(latitude);
-            lng.setText(longitude);
-            Log.d(TAG,"latitude"+latitude+"");
-            Log.d(TAG,"latitude"+longitude+"");}
+            latitude = String.valueOf(location.getLatitude());
+            longitude = String.valueOf(location.getLongitude());
+            Log.d(TAG, "latitude" + latitude + "");
+            Log.d(TAG, "latitude" + longitude + "");
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch(requestCode) {
+        switch (requestCode) {
             case ALL_PERMISSIONS_RESULT:
                 for (String perm : permissionsToRequest) {
                     if (!hasPermission(perm)) {
@@ -282,7 +372,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
                 if (permissionsRejected.size() > 0) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (shouldShowRequestPermissionRationale(permissionsRejected.get(0))) {
-                            new AlertDialog.Builder(LatlngActivity.this).
+                            new AlertDialog.Builder(UserPrefActivity.this).
                                     setMessage("These permissions are mandatory to get your location. You need to allow them.").
                                     setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                         @Override
@@ -308,7 +398,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
     }
 
 
-    private void requestPermission(){
+    private void requestPermission() {
         ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, 1);
     }
 
@@ -317,7 +407,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
         protected void onPreExecute() {
             super.onPreExecute(); //before background task is run
             // Showing progress dialog
-            pDialog = new ProgressDialog(LatlngActivity.this);
+            pDialog = new ProgressDialog(UserPrefActivity.this);
             pDialog.setMessage("Please wait...");
             pDialog.setCancelable(false);
             pDialog.show();
@@ -326,34 +416,57 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
         @Override
         protected ArrayList<HashMap<String, String>> doInBackground(Void... arg0) {
             HttpHandler handler = new HttpHandler();
+            String jsonString = null, prefString = "";
+            ArrayList<HashMap<String, String>> result = new ArrayList<>();
 
-            String jsonString = handler.makeServiceCall(url+"?lat="+latitude+"&lng="+longitude+"&pref1="+perf);
-            Log.d(TAG, "Response from url: " + jsonString);
-            if (jsonString != null){
+            if (pref.size() != 0) {
+                for (int i = 0; i < pref.size(); i++) {
+                    int j = 1+i;
+                    prefString += "&pref" + j + "=" + pref.get(i);
+                    jsonString = handler.makeServiceCall(url + "?lat=" + latitude + "&lng=" + longitude + prefString);
+                    Log.d(TAG, "Response from url: " + url + "?lat=" + latitude + "&lng=" + longitude + prefString);
+                }
+            }
+
+            if (jsonString != null) {
                 try {
                     int count = 0;
                     JSONObject jsonObj = new JSONObject(jsonString);
                     JSONArray candidates = jsonObj.getJSONArray("PlaceObject");
-                    for (int i = 0; i < candidates.length(); i++)
-                    {
+
+                    HashMap<String, String> current = new HashMap<>();
+
+                    current.put("name", "Current Location");
+                    current.put("lat", latitude);
+                    current.put("lng", longitude);
+                    current.put("count", "0");
+                    current.put("rating","No Rating");
+                    current.put("img","No Photos Provided");
+
+                    result.add(current);
+
+                    for (int i = 0; i < candidates.length(); i++) {
                         HashMap<String, String> candidate = new HashMap<>();
 
                         JSONObject c = candidates.getJSONObject(i);
                         String lat = c.getString("latitude");
                         String lng = c.getString("longitude");
-                        String name = c.getString("name");
+                        String name = c.getString("place_name");
+                        String img = c.getString("cover_image");
+                        String rating = c.getString("rating");
                         String countToString = Integer.toString(count);
 
                         candidate.put("name", name);
                         candidate.put("lat", lat);
                         candidate.put("lng", lng);
+                        candidate.put("img",img);
+                        candidate.put("rating",rating);
                         candidate.put("count", countToString);
                         count++;
 
                         result.add(candidate);
                     }
-                }
-                catch (final JSONException e) {
+                } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
                     runOnUiThread(new Runnable() {
                         @Override
@@ -362,7 +475,7 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
                                     "Json parsing error: " + e.getMessage(),
                                     Toast.LENGTH_LONG)
                                     .show();
-                            Log.d(TAG,"TEST: "+e.getMessage());
+                            Log.d(TAG, "TEST: " + e.getMessage());
                         }
                     });
 
@@ -370,15 +483,39 @@ public class LatlngActivity extends AppCompatActivity implements GoogleApiClient
             }
             return result;
         }
+
         @Override
-        protected void onPostExecute(ArrayList<HashMap<String, String>>result) { //running in uithread, only runinbackground runs in background
+        protected void onPostExecute(ArrayList<HashMap<String, String>> result) { //running in uithread, only runinbackground runs in background
             super.onPostExecute(result);
-            Log.d("TAG","onPost"+result);
+            Log.d("TAG", "onPost" + result);
             // Dismiss the progress dialog
             if (pDialog.isShowing())
                 pDialog.dismiss();
 
-            Toast.makeText(LatlngActivity.this,"Data Passed",Toast.LENGTH_LONG).show();
+            Toast.makeText(UserPrefActivity.this, "Data Passed", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private Chip getChip(final ChipGroup entryChipGroup, final String text) {
+        final Chip chip = new Chip(this);
+        chip.setChipDrawable(ChipDrawable.createFromResource(this, R.xml.chip));
+        int paddingDp = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 10,
+                getResources().getDisplayMetrics()
+        );
+        chip.setPadding(paddingDp, paddingDp, paddingDp, paddingDp);
+        chip.setText(text);
+        chip.setCheckedIconVisible(false);
+        chip.setCheckable(false);
+        chip.setOnCloseIconClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                entryChipGroup.removeView(chip);
+                pref.remove(text);
+
+            }
+        });
+        return chip;
+
     }
 }

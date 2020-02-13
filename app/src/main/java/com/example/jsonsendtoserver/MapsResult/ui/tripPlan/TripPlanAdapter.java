@@ -5,12 +5,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.jsonsendtoserver.R;
 
 import java.util.ArrayList;
@@ -47,6 +50,20 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
         Log.d(TAG, "Adapter Run: "+ TAG);
         holder.placeName.setText(places.get(position).get("name"));
 
+        if (!places.get(position).get("rating").equals("No Rating")) {
+            holder.ratingBar.setRating(Float.valueOf(places.get(position).get("rating")));
+        }
+        else {
+            holder.ratingBar.setVisibility(View.GONE);
+        }
+
+        if (!places.get(position).get("img").contains("No Photos Provided")) {
+            String img = places.get(position).get("img").replaceAll("\\\\", "");
+            Log.d(TAG,"img : "+ img);
+            Glide.with(context).load(img).into(holder.coverImg);
+        }
+
+
         if(position == places.size()-1 ) {
             holder.view1.setVisibility(View.GONE);
             holder.timeTaken.setVisibility(View.GONE);
@@ -65,7 +82,9 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView placeName;
         View view1,view2;
+        RatingBar ratingBar;
         LinearLayout timeTaken;
+        ImageView coverImg;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -73,6 +92,8 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
             view1 = itemView.findViewById(R.id.view1);
             view2 = itemView.findViewById(R.id.view2);
             timeTaken = itemView.findViewById(R.id.timeTaken);
+            ratingBar = itemView.findViewById(R.id.ratingBar);
+            coverImg = itemView.findViewById(R.id.coverImg);
             itemView.setOnClickListener(this);
         }
 
