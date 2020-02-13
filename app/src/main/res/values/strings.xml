@@ -11,8 +11,8 @@
     <string name="sample_place">Musuem</string>
     <string name="sample_timetaken">20 minutes approx</string>
     <string name="loading">loading...</string>
-    <string name="pref_selection">Choose your preferences (up tp 3)</string>
-    <string name="time_selection">Enter your Free Time (in hours)</string>
+    <string name="pref_selection">Choose your preferences (Up to 3)</string>
+    <string name="time_selection">Enter your available time (in hours)</string>
     <string name="ok">OK</string>
 
     <string name="dismiss_label">Dismiss</string>

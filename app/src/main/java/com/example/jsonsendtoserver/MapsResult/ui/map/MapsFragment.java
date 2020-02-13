@@ -336,10 +336,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
-        markerOptions.title("Current Position");
+        markerOptions.title("You are here");
+
         Log.d(TAG, "location changed" + latLng + "");
 
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         mCurrLocationMarker = mMap.addMarker(markerOptions);
 
     }
@@ -397,10 +398,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 String origin = latLngs.get(i).latitude + "," + latLngs.get(i).longitude;
                 String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
                 if (i==0) {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(Color.BLUE));
+                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(0xff3c62e8));
                 }
                 else {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(Color.GRAY));
+                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(0xff3c62e8));
                  }
             }
             return polylineOptions;
