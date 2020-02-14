@@ -21,6 +21,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MapsResult.MapsResultActivity"
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
             android:label="@string/title_activity_maps_result"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
