@@ -183,7 +183,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             }
 
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
-            mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 13)));
+            mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 12)));
 
             mMap.setBuildingsEnabled(true);
             mMap.setIndoorEnabled(true);
@@ -393,7 +393,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         protected ArrayList<PolylineOptions> doInBackground(Void... stgr) {
             ArrayList<PolylineOptions> polylineOptions = new ArrayList<>();
 
-            int length = latLngs.size() - 1 > 5 ? 5 : latLngs.size() - 1;
+            //int length = latLngs.size() - 1 > 5 ? 5 : latLngs.size() - 1;
+            int length = latLngPlot.size()-1;
             for (int i = 0; i < length; i++) {
                 String origin = latLngs.get(i).latitude + "," + latLngs.get(i).longitude;
                 String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
