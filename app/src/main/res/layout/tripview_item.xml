@@ -42,14 +42,15 @@
 
             <RatingBar
                 android:id="@+id/ratingBar"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:isIndicator="true"
                 android:clickable="false"
                 android:focusableInTouchMode="false"
                 android:focusable="false"
-                style="@style/Widget.AppCompat.RatingBar.Indicator"
-                android:numStars="5"/>
+                android:progressTint="@color/DarkRed"
+                style="@style/Widget.AppCompat.RatingBar.Small"
+                android:numStars="6"/>
 
         <TextView
             android:drawableLeft="@drawable/ic_apps_black_24dp"
