@@ -203,7 +203,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                showAlertDialogButtonClicked();
+                //showAlertDialogButtonClicked();
             }
         });
         mMap.getUiSettings().setZoomControlsEnabled(true);
@@ -439,7 +439,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         List<List<HashMap<String, String>>> routes = null;
         PolylineOptions lineOptions = new PolylineOptions();
 
-        Log.d(TAG,"jsonData " +jsonData);
         try {
             jObject = new JSONObject(jsonData);
             DataParser parser = new DataParser();
