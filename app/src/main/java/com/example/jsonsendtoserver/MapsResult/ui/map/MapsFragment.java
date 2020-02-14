@@ -414,6 +414,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
             if (result != null) {
                 for (int i = 0; i < result.size(); i++) {
+                    if(i!=0) {
+                        result.get(i).color(Color.parseColor("#808080"));
+                        if (i%2==0) {
+                            result.get(i).color(Color.parseColor("#A9A9A9"));
+                        }
+                    }
+                    else {
+                        result.get(i).zIndex(1000);
+                    }
                     mMap.addPolyline(result.get(i));
                 }
             }
