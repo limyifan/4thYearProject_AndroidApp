@@ -1,5 +1,33 @@
 <resources>
-    <string name="app_name">JSONSendToServer</string>
+    <string name="app_name">TripIT</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_maps_display">Map</string>
+    <string name="title_activity_get_time">GetTime</string>
+    <string name="title_activity_maps_result">MapsResultActivity</string>
+    <string name="title_trip">Trip Plan</string>
+    <string name="title_maps">Maps</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="sample_time_estimated">est 1.0 hours</string>
+    <string name="sample_place">Musuem</string>
+    <string name="sample_timetaken">20 minutes approx</string>
+    <string name="loading">loading...</string>
+    <string name="pref_selection">Choose your preferences (Up to 3)</string>
+    <string name="time_selection">Enter your available time (in hours)</string>
+    <string name="ok">OK</string>
+
+    <string name="dismiss_label">Dismiss</string>
+    <string name="clear_all_label">Clear all</string>
+    <string name="hint_text">Time You Got</string>
+
+    <string-array name="peferences_choice">
+        <item>Food</item>
+        <item>History</item>
+        <item>Leisure</item>
+        <item>Entertainment</item>
+        <item>Sport</item>
+        <item>PopularPlaces</item>
+        <item>Arts_Culture</item>
+        <item>AfterDark </item>
+    </string-array>
+
 </resources>

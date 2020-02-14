@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/mtrl_card_spacing"
+        android:layout_marginRight="@dimen/mtrl_card_spacing"
+        card_view:cardCornerRadius="10dp"
+        card_view:cardElevation="20dp"
+        app:strokeColor="@color/LightSlateGray"
+        app:strokeWidth="2.5dp"
+        >
+
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <ImageView
+            android:id="@+id/coverImg"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/mapbg" />
+
+        <TextView
+            android:drawableLeft="@drawable/ic_place_black_24dp"
+            style="@style/TextAppearance.AppCompat.Title"
+            android:id="@+id/placeName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+
+            android:text="@string/title_trip" />
+
+          <TextView
+              android:id="@+id/ratingBar"
+              android:drawableLeft="@drawable/ic_stars_black_24dp"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="8dp"
+              android:text="@string/sample_place"
+              style="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"/>
+
+        <TextView
+            android:drawableLeft="@drawable/ic_apps_black_24dp"
+            android:id="@+id/placeCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"
+            android:textColor="@color/LightSlateGray"
+            android:layout_marginTop="8dp"
+            android:text="@string/sample_place"/>
+
+        <TextView
+            android:drawableLeft="@drawable/ic_timer_black_24dp"
+            android:id="@+id/timeEstimated"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/LightSlateGray"
+            style="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"
+            android:text="@string/sample_time_estimated"
+            android:textSize="15sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <View
+        android:id="@+id/view1"
+        android:layout_width="4dp"
+        android:layout_height="25dp"
+        android:layout_gravity="center"
+        android:background="@color/Green" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        card_view:cardCornerRadius="10dp"
+        app:strokeColor="@color/LightSlateGray"
+        app:strokeWidth="2.5dp">
+
+    <LinearLayout
+        android:id="@+id/timeTaken"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/travelTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_directions_walk_black_24dp"
+            android:text="@string/sample_timetaken" />
+
+    </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <View
+        android:id="@+id/view2"
+        android:layout_width="4dp"
+        android:layout_height="25dp"
+        android:layout_gravity="center"
+        android:background="@color/Green" />
+
+</LinearLayout>
