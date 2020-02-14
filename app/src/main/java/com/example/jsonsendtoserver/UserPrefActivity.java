@@ -62,6 +62,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
     private ProgressDialog pDialog;
     public Location location;
     private GoogleApiClient googleApiClient;
+    String place_id;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private LocationRequest locationRequest;
     private static final long UPDATE_INTERVAL = 5000, FASTEST_INTERVAL = 5000; // = 5 seconds
@@ -435,6 +436,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
 
                     HashMap<String, String> current = new HashMap<>();
 
+                   // current.put("place_id", place_id);
                     current.put("name", "Current Location");
                     current.put("lat", latitude);
                     current.put("lng", longitude);
@@ -448,6 +450,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         HashMap<String, String> candidate = new HashMap<>();
 
                         JSONObject c = candidates.getJSONObject(i);
+                        String place_id = c.getString("place_id");
                         String lat = c.getString("latitude");
                         String lng = c.getString("longitude");
                         String name = c.getString("place_name");
@@ -455,6 +458,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         String rating = c.getString("rating");
                         String countToString = Integer.toString(count);
 
+                        candidate.put("place_id", place_id);
                         candidate.put("name", name);
                         candidate.put("lat", lat);
                         candidate.put("lng", lng);
@@ -462,7 +466,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         candidate.put("rating", rating);
                         candidate.put("count", countToString);
                         count++;
-
+                        Log.d(TAG, "Place id is: " + place_id);
                         resultNew.add(candidate);
                     }
                 } catch (final JSONException e) {
@@ -492,11 +496,6 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                 pDialog.dismiss();
 
             Toast.makeText(UserPrefActivity.this, "Data Passed", Toast.LENGTH_LONG).show();
-
-            Intent intent = new Intent(mContext, MapsResultActivity.class);
-            intent.putExtra("result", (Serializable) resultNew);
-            Log.d("TAG", "RESULT IS" + resultNew.toString());
-            startActivity(intent);
         }
     }
 

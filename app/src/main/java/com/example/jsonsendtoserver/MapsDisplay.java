@@ -90,7 +90,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps_display);
+       setContentView(R.layout.activity_maps_result);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -150,6 +150,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
             HashMap<String, String> resultHashMap = latLngPlot.get(i);
 
+            String place_id = resultHashMap.get("place_id");
             String name = resultHashMap.get("name");
             String lng = resultHashMap.get("lng");
             String lat = resultHashMap.get("lat");
@@ -163,11 +164,11 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
             Log.e(TAG, name);
 
-<<<<<<< HEAD
+
             mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
-=======
+
             mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
->>>>>>> routeCreated
+
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
             mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
 
@@ -177,7 +178,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
             latLngs.add(location);
         }
 
-        nextButton = (Button) findViewById(R.id.nextButton);
+       // nextButton = (Button) findViewById(R.id.nextButton);
         numBox = (EditText) findViewById(R.id.numBox);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -201,18 +202,18 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
                 Double lngDouble = Double.parseDouble(lng);
                 int count = Integer.parseInt(countToString);
 
-<<<<<<< HEAD
+
                     Log.e(TAG, name);
                 mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
 
                     nextButtonClickedCount++;
                     nextButtonClicked = true;
-=======
+
                 LatLng location = new LatLng(latDouble, lngDouble);
 
                 nextButtonClickedCount++;
                 nextButtonClicked = true;
->>>>>>> routeCreated
+
 
                 nextButton.setVisibility(View.INVISIBLE);
 

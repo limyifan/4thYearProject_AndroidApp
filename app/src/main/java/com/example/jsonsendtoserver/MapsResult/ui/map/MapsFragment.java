@@ -153,6 +153,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
             HashMap<String, String> resultHashMap = latLngPlot.get(i);
 
+            String place_id = resultHashMap.get("place_id");
             String name = resultHashMap.get("name");
             String lng = resultHashMap.get("lng");
             String lat = resultHashMap.get("lat");
@@ -230,6 +231,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 Log.d("BUTTON CLICKED", nextButtonClickedCount + "times");
                 HashMap<String, String> resultHashMap = latLngPlot.get(nextButtonClickedCount);
 
+                String place_id = resultHashMap.get("place_id");
                 String name = resultHashMap.get("name");
                 String lng = resultHashMap.get("lng");
                 String lat = resultHashMap.get("lat");

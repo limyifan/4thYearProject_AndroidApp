@@ -49,7 +49,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         Log.d(TAG, "Adapter Run: "+ TAG);
         holder.placeName.setText(places.get(position).get("name"));
-
+        Log.d(TAG, "Places element at "+position+"is "+places.get(position));
         if (!places.get(position).get("rating").equals("No Rating")) {
             holder.ratingBar.setRating(Float.valueOf(places.get(position).get("rating")));
         }
@@ -66,6 +66,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
         holder.timeTravel.setText(txt);
 
         Log.d(TAG,"size2 : "+ places.size()+ " "+ places.get(position).get("timeTravel"));
+
 
         if(position == places.size()-1 ) {
             holder.view1.setVisibility(View.GONE);
