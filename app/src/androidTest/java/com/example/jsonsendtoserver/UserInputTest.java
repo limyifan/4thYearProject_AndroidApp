@@ -1,7 +1,6 @@
 package com.example.jsonsendtoserver;
 
 
-import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -39,16 +38,15 @@ public class UserInputTest {
 
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class);
-//
-//    @Rule
-//    public GrantPermissionRule mGrantPermissionRule =
-//            GrantPermissionRule.grant(
-//                    "android.permission.ACCESS_FINE_LOCATION",
-//                    "android.permission.ACCESS_COARSE_LOCATION");
+
+    @Rule
+    public GrantPermissionRule mGrantPermissionRule =
+            GrantPermissionRule.grant(
+                    "android.permission.ACCESS_FINE_LOCATION",
+                    "android.permission.ACCESS_COARSE_LOCATION");
 
     @Test
     public void userInputTest() {
-        SystemClock.sleep(6000);
         ViewInteraction materialButton = onView(
                 allOf(withId(R.id.prefSelect), withText("Choose your preferences (Up to 3)"),
                         childAtPosition(

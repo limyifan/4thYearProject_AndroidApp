@@ -183,7 +183,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             }
 
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
-            mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 13)));
+            mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 12)));
 
             mMap.setBuildingsEnabled(true);
             mMap.setIndoorEnabled(true);
@@ -203,7 +203,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                showAlertDialogButtonClicked();
+                //showAlertDialogButtonClicked();
             }
         });
         mMap.getUiSettings().setZoomControlsEnabled(true);
@@ -393,7 +393,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         protected ArrayList<PolylineOptions> doInBackground(Void... stgr) {
             ArrayList<PolylineOptions> polylineOptions = new ArrayList<>();
 
-            int length = latLngs.size() - 1 > 5 ? 5 : latLngs.size() - 1;
+            //int length = latLngs.size() - 1 > 5 ? 5 : latLngs.size() - 1;
+            int length = latLngPlot.size()-1;
             for (int i = 0; i < length; i++) {
                 String origin = latLngs.get(i).latitude + "," + latLngs.get(i).longitude;
                 String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
@@ -413,6 +414,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
             if (result != null) {
                 for (int i = 0; i < result.size(); i++) {
+                    if(i!=0) {
+                        result.get(i).color(Color.parseColor("#808080"));
+                        if (i%2==0) {
+                            result.get(i).color(Color.parseColor("#A9A9A9"));
+                        }
+                    }
+                    else {
+                        result.get(i).zIndex(1000);
+                    }
                     mMap.addPolyline(result.get(i));
                 }
             }
@@ -439,7 +449,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         List<List<HashMap<String, String>>> routes = null;
         PolylineOptions lineOptions = new PolylineOptions();
 
-        Log.d(TAG,"jsonData " +jsonData);
         try {
             jObject = new JSONObject(jsonData);
             DataParser parser = new DataParser();

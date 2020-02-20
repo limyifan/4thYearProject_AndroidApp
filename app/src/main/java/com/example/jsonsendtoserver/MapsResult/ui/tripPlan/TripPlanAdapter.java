@@ -49,20 +49,18 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         Log.d(TAG, "Adapter Run: "+ TAG);
         holder.placeName.setText(places.get(position).get("name"));
-
-        if (!places.get(position).get("rating").equals("No Rating")) {
-            holder.ratingBar.setRating(Float.valueOf(places.get(position).get("rating")));
-        }
-        else {
-            holder.ratingBar.setVisibility(View.GONE);
-        }
+        holder.ratingBar.setText(places.get(position).get("rating"));
 
         if (!places.get(position).get("img").contains("No Photos Provided")) {
             String img = places.get(position).get("img").replaceAll("\\\\", "");
-            Log.d(TAG,"img : "+ img);
             Glide.with(context).load(img).into(holder.coverImg);
         }
 
+        String txt = places.get(position).get("timeTravel")+" approx";
+        holder.timeTravel.setText(txt);
+        holder.placeCategory.setText(places.get(position).get("place_type"));
+
+        Log.d(TAG,"size2 : "+ places.size()+ " "+ places.get(position).get("timeTravel"));
 
         if(position == places.size()-1 ) {
             holder.view1.setVisibility(View.GONE);
@@ -80,7 +78,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView placeName;
+        TextView placeName, timeTravel,ratingBar, placeCategory;
         View view1,view2;
         RatingBar ratingBar;
         LinearLayout timeTaken;
@@ -94,6 +92,8 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
             timeTaken = itemView.findViewById(R.id.timeTaken);
             ratingBar = itemView.findViewById(R.id.ratingBar);
             coverImg = itemView.findViewById(R.id.coverImg);
+            timeTravel = itemView.findViewById(R.id.travelTime);
+            placeCategory = itemView.findViewById(R.id.placeCategory);
             itemView.setOnClickListener(this);
         }
 
