@@ -80,6 +80,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView placeName, timeTravel,ratingBar, placeCategory;
         View view1,view2;
+        RatingBar ratingBar;
         LinearLayout timeTaken;
         ImageView coverImg;
 
