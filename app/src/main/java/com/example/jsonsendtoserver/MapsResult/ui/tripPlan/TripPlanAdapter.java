@@ -62,7 +62,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
         }
 
             holder.estimatedTime.setText((places.get(position).get("average_time")));
-            Log.e(TAG, "Average Time is: " + holder.estimatedTime);
+
 
 
         String txt = places.get(position).get("timeTravel")+" approx";

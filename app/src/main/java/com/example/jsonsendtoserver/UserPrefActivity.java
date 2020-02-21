@@ -462,31 +462,33 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     resultNew.add(current);
 
                     for (int i = 0; i < candidates.length(); i++) {
-                        HashMap<String, String> candidate = new HashMap<>();
+                        if(i%2 == 0) {
+                            HashMap<String, String> candidate = new HashMap<>();
 
-                        JSONObject c = candidates.getJSONObject(i);
-                        String place_id = c.getString("place_id");
-                        String lat = c.getString("latitude");
-                        String lng = c.getString("longitude");
-                        String name = c.getString("place_name");
-                        String img = c.getString("cover_image");
-                        String rating = c.getString("rating");
-                        String placeType = c.getString("place_type");
-                        String average_time = c.getString("average_time");
-                        String countToString = Integer.toString(count);
+                            JSONObject c = candidates.getJSONObject(i);
+                            String place_id = c.getString("place_id");
+                            String lat = c.getString("latitude");
+                            String lng = c.getString("longitude");
+                            String name = c.getString("place_name");
+                            String img = c.getString("cover_image");
+                            String rating = c.getString("rating");
+                            String placeType = c.getString("place_type");
+                            String average_time = c.getString("average_time");
+                            String countToString = Integer.toString(count);
 
-                        candidate.put("place_id", place_id);
-                        candidate.put("name", name);
-                        candidate.put("lat", lat);
-                        candidate.put("lng", lng);
-                        candidate.put("img", img);
-                        candidate.put("rating", rating);
-                        candidate.put("place_type",placeType);
-                        candidate.put("count", countToString);
-                        candidate.put("average_time", average_time);
-                        count++;
-                        Log.d(TAG, "Place id is: " + place_id);
-                        resultNew.add(candidate);
+                            candidate.put("place_id", place_id);
+                            candidate.put("name", name);
+                            candidate.put("lat", lat);
+                            candidate.put("lng", lng);
+                            candidate.put("img", img);
+                            candidate.put("rating", rating);
+                            candidate.put("place_type", placeType);
+                            candidate.put("count", countToString);
+                            candidate.put("average_time", average_time);
+                            count++;
+                            Log.d(TAG, "Place id is: " + place_id);
+                            resultNew.add(candidate);
+                        }
                     }
                 } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
