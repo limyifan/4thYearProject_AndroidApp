@@ -434,10 +434,12 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                 for (int i = 0; i < pref.size(); i++) {
                     int j = 1 + i;
                     prefString += "&pref" + j + "=" + pref.get(i);
-                    jsonString = handler.makeServiceCall(url + "?lat=" + latitude + "&lng=" + longitude+"&time="+time + prefString);
-                    Log.d(TAG, "Response from url: " + url + "?lat=" + latitude + "&lng=" + longitude+"&time="+time  + prefString);
+
                 }
+                jsonString = handler.makeServiceCall(url + "?lat=" + latitude + "&lng=" + longitude+ prefString +"&time="+time);
+                Log.d(TAG, "Response from url: " + url + "?lat=" + latitude + "&lng=" + longitude  + prefString + "&time="+time);
             }
+
 
             if (jsonString != null) {
                 try {
@@ -455,6 +457,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     current.put("rating", "No Rating");
                     current.put("place_type","");
                     current.put("img", "No Photos Provided");
+                    current.put("average_time", "N/A");
 
                     resultNew.add(current);
 
@@ -469,6 +472,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         String img = c.getString("cover_image");
                         String rating = c.getString("rating");
                         String placeType = c.getString("place_type");
+                        String average_time = c.getString("average_time");
                         String countToString = Integer.toString(count);
 
                         candidate.put("place_id", place_id);
@@ -479,6 +483,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         candidate.put("rating", rating);
                         candidate.put("place_type",placeType);
                         candidate.put("count", countToString);
+                        candidate.put("average_time", average_time);
                         count++;
                         Log.d(TAG, "Place id is: " + place_id);
                         resultNew.add(candidate);

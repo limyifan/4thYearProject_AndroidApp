@@ -51,7 +51,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
         holder.placeName.setText(places.get(position).get("name"));
         Log.d(TAG, "Places element at "+position+"is "+places.get(position));
         if (!places.get(position).get("rating").equals("No Rating")) {
-            holder.ratingBar.setRating(Float.valueOf(places.get(position).get("rating")));
+            holder.ratingBar.setText((places.get(position).get("rating")));
         }
         else {
             holder.ratingBar.setVisibility(View.GONE);
@@ -60,6 +60,10 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
             String img = places.get(position).get("img").replaceAll("\\\\", "");
             Glide.with(context).load(img).into(holder.coverImg);
         }
+
+            holder.estimatedTime.setText((places.get(position).get("average_time")));
+            Log.e(TAG, "Average Time is: " + holder.estimatedTime);
+
 
         String txt = places.get(position).get("timeTravel")+" approx";
         holder.timeTravel.setText(txt);
@@ -84,7 +88,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView placeName, timeTravel,ratingBar, placeCategory;
+        TextView placeName, timeTravel,ratingBar, placeCategory, estimatedTime;
         View view1,view2;
         LinearLayout timeTaken;
         ImageView coverImg;
@@ -97,6 +101,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
             timeTaken = itemView.findViewById(R.id.timeTaken);
             ratingBar = itemView.findViewById(R.id.ratingBar);
             coverImg = itemView.findViewById(R.id.coverImg);
+            estimatedTime = itemView.findViewById(R.id.timeEstimated);
             timeTravel = itemView.findViewById(R.id.travelTime);
             placeCategory = itemView.findViewById(R.id.placeCategory);
             itemView.setOnClickListener(this);
