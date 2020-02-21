@@ -18,6 +18,7 @@
     <string name="dismiss_label">Dismiss</string>
     <string name="clear_all_label">Clear all</string>
     <string name="hint_text">Time You Got</string>
+    <string name="dialog_no_suggestion">Sorry, suggestion activity not found in this area</string>
 
     <string-array name="peferences_choice">
         <item>Food</item>
