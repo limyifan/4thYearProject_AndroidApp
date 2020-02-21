@@ -400,11 +400,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             for (int i = 0; i < length; i++) {
                 String origin = latLngs.get(i).latitude + "," + latLngs.get(i).longitude;
                 String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
+                Log.d(TAG, "polyline: "+ "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0");
                 if (i==0) {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(0xff3c62e8));
+                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
                 }
                 else {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(0xff3c62e8));
+                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
                  }
             }
             return polylineOptions;

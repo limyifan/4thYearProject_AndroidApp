@@ -60,8 +60,8 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
             String img = places.get(position).get("img").replaceAll("\\\\", "");
             Glide.with(context).load(img).into(holder.coverImg);
         }
-
-            holder.estimatedTime.setText((places.get(position).get("average_time")));
+    String txt1 = " Est Time: "+places.get(position).get("average_time")+" min";
+            holder.estimatedTime.setText(txt1);
 
 
 
