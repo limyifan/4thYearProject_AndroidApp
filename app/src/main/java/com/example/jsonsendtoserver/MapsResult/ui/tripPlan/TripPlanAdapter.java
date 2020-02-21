@@ -56,7 +56,6 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
         else {
             holder.ratingBar.setVisibility(View.GONE);
         }
-
         if (!places.get(position).get("img").contains("No Photos Provided")) {
             String img = places.get(position).get("img").replaceAll("\\\\", "");
             Glide.with(context).load(img).into(holder.coverImg);
@@ -64,6 +63,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
 
         String txt = places.get(position).get("timeTravel")+" approx";
         holder.timeTravel.setText(txt);
+        holder.placeCategory.setText(places.get(position).get("place_type"));
 
         Log.d(TAG,"size2 : "+ places.size()+ " "+ places.get(position).get("timeTravel"));
 
@@ -84,7 +84,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView placeName, timeTravel;
+        TextView placeName, timeTravel,ratingBar, placeCategory;
         View view1,view2;
         RatingBar ratingBar;
         LinearLayout timeTaken;
@@ -99,6 +99,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
             ratingBar = itemView.findViewById(R.id.ratingBar);
             coverImg = itemView.findViewById(R.id.coverImg);
             timeTravel = itemView.findViewById(R.id.travelTime);
+            placeCategory = itemView.findViewById(R.id.placeCategory);
             itemView.setOnClickListener(this);
         }
 

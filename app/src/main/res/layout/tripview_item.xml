@@ -40,16 +40,14 @@
 
             android:text="@string/title_trip" />
 
-            <RatingBar
-                android:id="@+id/ratingBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:isIndicator="true"
-                android:clickable="false"
-                android:focusableInTouchMode="false"
-                android:focusable="false"
-                style="@style/Widget.AppCompat.RatingBar.Indicator"
-                android:numStars="5"/>
+          <TextView
+              android:id="@+id/ratingBar"
+              android:drawableLeft="@drawable/ic_stars_black_24dp"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="8dp"
+              android:text="@string/sample_place"
+              style="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"/>
 
         <TextView
             android:drawableLeft="@drawable/ic_apps_black_24dp"

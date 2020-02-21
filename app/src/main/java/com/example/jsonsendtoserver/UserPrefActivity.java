@@ -73,7 +73,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
     // integer for permissions results request
     private static final int ALL_PERMISSIONS_RESULT = 1011;
 
-    private String latitude, longitude;
+    private String latitude, longitude, time;
     private ArrayList<String> pref = new ArrayList<>();
     String[] listItems;
     boolean[] checkedItems;
@@ -114,6 +114,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 textView.setText(String.valueOf(progress));
+                time = String.valueOf(progress);
             }
         });
 
@@ -423,8 +424,8 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                 for (int i = 0; i < pref.size(); i++) {
                     int j = 1 + i;
                     prefString += "&pref" + j + "=" + pref.get(i);
-                    jsonString = handler.makeServiceCall(url + "?lat=" + latitude + "&lng=" + longitude + prefString);
-                    Log.d(TAG, "Response from url: " + url + "?lat=" + latitude + "&lng=" + longitude + prefString);
+                    jsonString = handler.makeServiceCall(url + "?lat=" + latitude + "&lng=" + longitude+"&time="+time + prefString);
+                    Log.d(TAG, "Response from url: " + url + "?lat=" + latitude + "&lng=" + longitude+"&time="+time  + prefString);
                 }
             }
 
@@ -442,6 +443,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     current.put("lng", longitude);
                     current.put("count", "0");
                     current.put("rating", "No Rating");
+                    current.put("place_type","");
                     current.put("img", "No Photos Provided");
 
                     resultNew.add(current);
@@ -456,6 +458,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         String name = c.getString("place_name");
                         String img = c.getString("cover_image");
                         String rating = c.getString("rating");
+                        String placeType = c.getString("place_type");
                         String countToString = Integer.toString(count);
 
                         candidate.put("place_id", place_id);
@@ -464,6 +467,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         candidate.put("lng", lng);
                         candidate.put("img", img);
                         candidate.put("rating", rating);
+                        candidate.put("place_type",placeType);
                         candidate.put("count", countToString);
                         count++;
                         Log.d(TAG, "Place id is: " + place_id);
