@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:title="TripIT"
-        app:titleTextColor="#FFF" />
+        app:titleTextColor="?attr/colorPrimaryDark" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -80,18 +80,6 @@
 
             </LinearLayout>
 
-<!--            <TextView-->
-<!--                android:id="@+id/textView3"-->
-<!--                android:layout_width="316dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:text="       |       |       |       |       |       |       |       |       |       |       |       |" />-->
-
-<!--            <TextView-->
-<!--                android:id="@+id/textView4"-->
-<!--                android:layout_width="319dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:text="      0    1    2   3    4    5    6    7    8    9    10    11    12" />-->
-
         </LinearLayout>
 
         <com.google.android.material.chip.ChipGroup
@@ -110,10 +98,12 @@
             android:id="@+id/prefSelect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="?attr/colorPrimaryDark"
             android:layout_gravity="center"
             android:text="@string/pref_selection" />
 
         <Button
+            android:textColor="?attr/colorPrimaryDark"
             android:id="@+id/goButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

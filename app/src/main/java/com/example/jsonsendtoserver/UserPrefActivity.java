@@ -58,7 +58,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private String TAG = UserPrefActivity.class.getSimpleName();
     NetworkCall networkCall;
-    private static String url = "https://201.team/api/randomroute/getroute.php/";
+    private static String url = "https://201.team/api/v2/GetRoute.php/";
     private ProgressDialog pDialog;
     public Location location;
     private GoogleApiClient googleApiClient;
@@ -113,7 +113,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 textView.setText(String.valueOf(progress));
-                time = String.valueOf(progress);
+                time = String.valueOf(progress * 60);
             }
         });
 
@@ -173,7 +173,6 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         }
                     }
                 });
-
                 mBuilder.setCancelable(false);
                 mBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
@@ -210,8 +209,19 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     }
                 });
 
-                AlertDialog mDialog = mBuilder.create();
+                final AlertDialog mDialog = mBuilder.create();
+
+                mDialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface arg0) {
+                        mDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                        mDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                        mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    }
+                });
+
                 mDialog.show();
+
             }
         });
 
@@ -495,12 +505,33 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
             if (pDialog.isShowing())
                 pDialog.dismiss();
 
-            Toast.makeText(UserPrefActivity.this, "Data Passed", Toast.LENGTH_LONG).show();
+            if (resultNew.size()<=1) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(UserPrefActivity.this);
+                builder.setMessage(R.string.dialog_no_suggestion)
+                        .setNegativeButton(R.string.dismiss_label, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.dismiss();
+                            }
+                        });
+                final AlertDialog dialog = builder.create();
 
-            Intent intent = new Intent(mContext, MapsResultActivity.class);
-            intent.putExtra("result", (Serializable) resultNew);
-            Log.d("TAG", "RESULT IS" + resultNew.toString());
-            startActivity(intent);
+                dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface arg0) {
+                        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    }
+                });
+
+                dialog.show();
+            }else {
+
+                Toast.makeText(UserPrefActivity.this, "Data Passed", Toast.LENGTH_LONG).show();
+
+                Intent intent = new Intent(mContext, MapsResultActivity.class);
+                intent.putExtra("result", (Serializable) resultNew);
+                Log.d("TAG", "RESULT IS" + resultNew.toString());
+                startActivity(intent);
+            }
         }
     }
 

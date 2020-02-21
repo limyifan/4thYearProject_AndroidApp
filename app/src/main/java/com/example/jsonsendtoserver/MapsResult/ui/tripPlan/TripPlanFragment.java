@@ -101,18 +101,20 @@ public class TripPlanFragment extends Fragment {
                     latLngPlot.get(i).put("timeTravel",candidates.getString("travelTime"));
                     Log.d(TAG,"size : "+ latLngPlot.get(i).get("name")+ " "+ latLngPlot.get(i).get("timeTravel"));
 
-                    Log.d(TAG, "doInBackground: "+latLngPlot.get(i).toString());
+                    Log.d(TAG, "doInBackground: "+url2);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
+
             return result;
         }
 
         @Override
         protected void onPostExecute(ArrayList<HashMap<String, String>> result) { //running in uithread, only runinbackground runs in background
             super.onPostExecute(result);
+
             Log.d("TAG", "onPost" + result);
             // Dismiss the progress dialog
             if (pDialog.isShowing())

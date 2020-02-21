@@ -21,7 +21,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MapsResult.MapsResultActivity"
-            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
+            android:theme="@style/AppTheme.NoActionBar"
             android:label="@string/title_activity_maps_result"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -36,10 +36,11 @@
             android:value="@string/google_maps_key" />
         <activity
             android:name=".UserPrefActivity"
-            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
+            android:theme="@style/AppTheme.NoActionBar"
             android:label="@string/title_activity_maps">
         </activity>
-        <activity android:name=".MainActivity" android:theme="@style/Theme.MaterialComponents.Light.NoActionBar">
+        <activity android:name=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
