@@ -10,7 +10,7 @@
     <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="colorPrimary">@color/Yellow</item>
+        <item name="colorPrimary">#FFAF05</item>
         <item name="colorPrimaryDark">@color/DarkSlateGray</item>
     </style>
 
