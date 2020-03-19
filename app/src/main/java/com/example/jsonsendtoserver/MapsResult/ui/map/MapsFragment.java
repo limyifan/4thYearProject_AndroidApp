@@ -103,7 +103,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
              supportMapFragment = SupportMapFragment.newInstance();
              ft.replace(R.id.map,supportMapFragment).commit();
          }
-        FloatingActionButton skipButton = root.findViewById(R.id.floatingActionButton);
+       // FloatingActionButton skipButton = root.findViewById(R.id.floatingActionButton);
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -129,7 +129,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {
         ArrayList<String> result = new ArrayList<>();
-      //  FloatingActionButton skipButton = root.findViewById(R.id.floatingActionButton);
+
         for (String perm : wantedPermissions) {
             if (!hasPermission(perm)) {
                 result.add(perm);
@@ -208,7 +208,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             mMarkerArray.add(marker);
 
         }
-        skipButton.setOnClickListener(new View.OnClickListener() {
+      /*  skipButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 skipButtonClicked = true;
@@ -239,7 +239,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
                 mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
             }
-        });
+        });*/
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
