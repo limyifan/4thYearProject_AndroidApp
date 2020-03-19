@@ -22,6 +22,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 
 import android.graphics.Color;
@@ -34,15 +35,18 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +56,7 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.zip.Inflater;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -75,16 +80,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     private static final int ALL_PERMISSIONS_RESULT = 1011;
     ArrayList<HashMap<String, String>> latLngPlot;
 
+    Boolean skipButtonClicked = false;
+    int skipButtonClickedCount = 0;
+    public FloatingActionButton skipButton;
     Boolean nextButtonClicked = false;
     int nextButtonClickedCount = 0;
     private ArrayList<LatLng> latLngs = new ArrayList<>();
     private EditText numBox;
-
+   // public View root;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         View root = inflater.inflate(R.layout.fragment_maps, container, false);
 
          SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
@@ -94,6 +103,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
              supportMapFragment = SupportMapFragment.newInstance();
              ft.replace(R.id.map,supportMapFragment).commit();
          }
+        FloatingActionButton skipButton = root.findViewById(R.id.floatingActionButton);
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -119,7 +129,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {
         ArrayList<String> result = new ArrayList<>();
-
+      //  FloatingActionButton skipButton = root.findViewById(R.id.floatingActionButton);
         for (String perm : wantedPermissions) {
             if (!hasPermission(perm)) {
                 result.add(perm);
@@ -140,7 +150,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        Marker marker;
 
+        ArrayList<Marker> mMarkerArray = new ArrayList<>();
         Intent intent = getActivity().getIntent();
         Log.d("TAG", "NEW INTENT");
         latLngPlot = (ArrayList<HashMap<String, String>>) intent.getSerializableExtra("result");
@@ -173,9 +185,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
                 mCurrLocationMarker = mMap.addMarker(markerOptions);
+                marker = mCurrLocationMarker;
+
             }
             else {
-                mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
+                marker = mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
+              //  mMarkerArray.add(marker);
             }
 
             if (count == 0) {
@@ -190,8 +205,41 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             mMap.setIndoorEnabled(true);
 
             latLngs.add(location);
+            mMarkerArray.add(marker);
 
         }
+        skipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                skipButtonClicked = true;
+
+                if (skipButtonClickedCount == latLngPlot.size()) {
+                    skipButtonClickedCount = 0;
+                }
+
+                Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
+                HashMap<String, String> resultHashMap = latLngPlot.get(skipButtonClickedCount);
+
+                String name = resultHashMap.get("name");
+                String lng = resultHashMap.get("lng");
+                String lat = resultHashMap.get("lat");
+                String countToString = resultHashMap.get("count");
+
+
+                Double latDouble = Double.parseDouble(lat);
+                Double lngDouble = Double.parseDouble(lng);
+                int count = Integer.parseInt(countToString);
+                LatLng location = new LatLng(latDouble, lngDouble);
+
+                Log.e(TAG, name);
+                mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
+
+                skipButtonClickedCount++;
+                skipButtonClicked = true;
+
+                mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
+            }
+        });
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -210,6 +258,30 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
         new LoopMarker().execute();
+
+        //fit all markers on zoom
+        LatLngBounds bounds = calculateBounds(mMarkerArray);
+        zoomToFit(bounds);
+    }
+
+    public void zoomToFit(LatLngBounds bound)
+    {
+        Log.d("ZOOMTOFIT", "inside zoom");
+        int padding = 0;
+       CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bound, padding);
+               mMap.animateCamera(cu);
+       // mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bound, 25), 1000, null);
+    }
+    public LatLngBounds calculateBounds(ArrayList<Marker> markers)
+    {
+        Log.d("ZOOMTOFIT", "inside calculate");
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (Marker marker : markers) {
+            builder.include(marker.getPosition());
+            Log.d("marker", "marker is: "+marker.getPosition());
+        }
+        LatLngBounds bounds = builder.build();
+        return bounds;
     }
 
     public void showAlertDialogButtonClicked() {

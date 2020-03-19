@@ -49,17 +49,17 @@
               android:text="@string/sample_place"
               style="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"/>
 
-        <TextView
-            android:drawableLeft="@drawable/ic_apps_black_24dp"
-            android:id="@+id/placeCategory"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"
-            android:textColor="@color/LightSlateGray"
-            android:layout_marginTop="8dp"
-            android:text="@string/sample_place"/>
+            <TextView
+                android:id="@+id/placeCategory"
+                style="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:drawableLeft="@drawable/ic_apps_black_24dp"
+                android:text="@string/sample_place"
+                android:textColor="@color/LightSlateGray" />
 
-        <TextView
+            <TextView
             android:drawableLeft="@drawable/ic_timer_black_24dp"
             android:id="@+id/timeEstimated"
             android:layout_width="match_parent"
