@@ -103,7 +103,39 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
              supportMapFragment = SupportMapFragment.newInstance();
              ft.replace(R.id.map,supportMapFragment).commit();
          }
-       // FloatingActionButton skipButton = root.findViewById(R.id.floatingActionButton);
+        FloatingActionButton skipButton = root.findViewById(R.id.floatingActionButton);
+       skipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                skipButtonClicked = true;
+
+                if (skipButtonClickedCount == latLngPlot.size()) {
+                    skipButtonClickedCount = 0;
+                }
+
+                Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
+                HashMap<String, String> resultHashMap = latLngPlot.get(skipButtonClickedCount);
+
+                String name = resultHashMap.get("name");
+                String lng = resultHashMap.get("lng");
+                String lat = resultHashMap.get("lat");
+                String countToString = resultHashMap.get("count");
+
+
+                Double latDouble = Double.parseDouble(lat);
+                Double lngDouble = Double.parseDouble(lng);
+                int count = Integer.parseInt(countToString);
+                LatLng location = new LatLng(latDouble, lngDouble);
+
+                mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
+
+                skipButtonClickedCount++;
+                skipButtonClicked = true;
+
+                mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
+                Log.d(TAG, "Skip Button is onclick: "+name);
+            }
+        });
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -208,38 +240,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             mMarkerArray.add(marker);
 
         }
-      /*  skipButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                skipButtonClicked = true;
-
-                if (skipButtonClickedCount == latLngPlot.size()) {
-                    skipButtonClickedCount = 0;
-                }
-
-                Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
-                HashMap<String, String> resultHashMap = latLngPlot.get(skipButtonClickedCount);
-
-                String name = resultHashMap.get("name");
-                String lng = resultHashMap.get("lng");
-                String lat = resultHashMap.get("lat");
-                String countToString = resultHashMap.get("count");
-
-
-                Double latDouble = Double.parseDouble(lat);
-                Double lngDouble = Double.parseDouble(lng);
-                int count = Integer.parseInt(countToString);
-                LatLng location = new LatLng(latDouble, lngDouble);
-
-                Log.e(TAG, name);
-                mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
-
-                skipButtonClickedCount++;
-                skipButtonClicked = true;
-
-                mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
-            }
-        });*/
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
