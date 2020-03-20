@@ -436,6 +436,8 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     prefString += "&pref" + j + "=" + pref.get(i);
 
                 }
+                latitude = "54.009";
+                longitude = "-6.4049";
                 jsonString = handler.makeServiceCall(url + "?lat=" + latitude + "&lng=" + longitude+ prefString +"&time="+time);
                 Log.d(TAG, "Response from url: " + url + "?lat=" + latitude + "&lng=" + longitude  + prefString + "&time="+time);
             }

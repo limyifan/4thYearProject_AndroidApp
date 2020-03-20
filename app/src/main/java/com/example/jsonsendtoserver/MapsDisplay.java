@@ -32,12 +32,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -46,9 +48,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.os.Handler;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -78,9 +82,9 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
     ArrayList<HashMap<String, String>> latLngPlot;
     LatLng location;
     int timeTaken = 0;
-    Boolean nextButtonClicked = false;
-    int nextButtonClickedCount = 0;
-    Button nextButton;
+    Boolean skipButtonClicked = false;
+    int skipButtonClickedCount = 0;
+    Button skipButton;
     EditText numBox;
     SupportMapFragment mapFrag;
     private ArrayList<LatLng> latLngs = new ArrayList<>();
@@ -96,6 +100,11 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
         mapFragment.getMapAsync(this);
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        /*TextView origin = findViewById(R.id.origin);
+        TextView destination = findViewById(R.id.destination);
+        TextView distance = findViewById(R.id.distance);
+        TextView distanceVal = findViewById(R.id.distanceVal);*/
+        Button skipButton = findViewById(R.id.floatingActionButton);
 
         permissionsToRequest = permissionsToRequest(permissions);
 
@@ -142,6 +151,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
         Intent intent = getIntent();
         Log.d("TAG", "NEW INTENT");
+
         latLngPlot = (ArrayList<HashMap<String, String>>) intent.getSerializableExtra("result");
         String log = latLngPlot.toString();
         Log.d("TAG", "LATLNGPLOT IS" + log);
@@ -166,7 +176,6 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
 
             mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
-
             mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
 
             mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
@@ -178,19 +187,27 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
             latLngs.add(location);
         }
 
+        for(int i = 0; i < latLngPlot.size(); i++) {
+            HashMap<String, String> hashMapToDisplay = latLngPlot.get(i);
+
+        }
+
+        // fits all markers on the screen
+
+
        // nextButton = (Button) findViewById(R.id.nextButton);
         numBox = (EditText) findViewById(R.id.numBox);
-        nextButton.setOnClickListener(new View.OnClickListener() {
+        skipButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                nextButtonClicked = true;
+                skipButtonClicked = true;
 
-                if (nextButtonClickedCount == latLngPlot.size()) {
-                    nextButtonClickedCount = 0;
+                if (skipButtonClickedCount == latLngPlot.size()) {
+                    skipButtonClickedCount = 0;
                 }
 
-                Log.d("BUTTON CLICKED", nextButtonClickedCount + "times");
-                HashMap<String, String> resultHashMap = latLngPlot.get(nextButtonClickedCount);
+                Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
+                HashMap<String, String> resultHashMap = latLngPlot.get(skipButtonClickedCount);
 
                 String name = resultHashMap.get("name");
                 String lng = resultHashMap.get("lng");
@@ -206,29 +223,27 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
                     Log.e(TAG, name);
                 mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
 
-                    nextButtonClickedCount++;
-                    nextButtonClicked = true;
+                    skipButtonClickedCount++;
+                    skipButtonClicked = true;
 
                 LatLng location = new LatLng(latDouble, lngDouble);
 
-                nextButtonClickedCount++;
-                nextButtonClicked = true;
+                skipButtonClickedCount++;
+                skipButtonClicked = true;
 
 
-                nextButton.setVisibility(View.INVISIBLE);
+                skipButton.setVisibility(View.INVISIBLE);
 
-                swapButtonAndInput(nextButton, numBox);
+                swapButtonAndInput(skipButton, numBox);
 
                 numBox.setOnKeyListener(new View.OnKeyListener() {
                     public boolean onKey(View v, int keyCode, KeyEvent event) {
                         // If the event is a key-down event on the "enter" button
                         if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                                 (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                            timeTaken = Integer.parseInt(numBox.getText().toString());
-                            new SendDeviceDetails().execute("https://201.team/time.php/?timespent=" + timeTaken);
 
-                            swapButtonAndInput(nextButton, numBox);
-                            nextButton.setVisibility(View.VISIBLE);
+                            swapButtonAndInput(skipButton, numBox);
+                            skipButton.setVisibility(View.VISIBLE);
                             return true;
                         }
                         return false;
@@ -262,7 +277,9 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
             }
         });
         mMap.getUiSettings().setZoomControlsEnabled(true);
+
     }
+
 
     public void swapButtonAndInput(Button b, EditText e) {
         float buttonPosX = b.getX();
@@ -431,6 +448,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
                 timeTaken = data.getIntExtra("result", 0);
@@ -468,7 +486,7 @@ public class MapsDisplay extends FragmentActivity implements OnMapReadyCallback,
 
                 String origin = latLngs.get(i).latitude + "," + latLngs.get(i).longitude;
                 String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
-
+              //  String name = latLngPlot.get(i).
                 polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw"));
 
             }

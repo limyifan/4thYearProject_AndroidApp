@@ -45,17 +45,17 @@ public class MapsResultActivity extends AppCompatActivity {
         setContentView(R.layout.activity_maps_result);
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+      //   getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_maps, R.id.navigation_trip)
                 .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+      NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+//       NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
     }
 }
