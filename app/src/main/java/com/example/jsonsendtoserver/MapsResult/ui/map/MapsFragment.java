@@ -22,7 +22,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 
 import android.graphics.Color;
@@ -56,7 +55,6 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.util.List;
-import java.util.zip.Inflater;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -257,7 +255,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         });
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
-        new LoopMarker().execute();
+        //new LoopMarker().execute();
 
         //fit all markers on zoom
         LatLngBounds bounds = calculateBounds(mMarkerArray);
@@ -474,10 +472,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
                 Log.d(TAG, "polyline: "+ "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0");
                 if (i==0) {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
+                    polylineOptions.add(addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
                 }
                 else {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
+                    polylineOptions.add(addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
                  }
             }
             return polylineOptions;
@@ -504,7 +502,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
-    public PolylineOptions addMarker(String url) {
+    public PolylineOptions addPolyline(String url) {
         try {
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
