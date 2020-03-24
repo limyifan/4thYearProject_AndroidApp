@@ -26,11 +26,11 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
     private ArrayList<HashMap<String, String>> latLngPlot;
     private GoogleMap mMap;
-    private TextView nextPlaceName, timeEstFinish, placeDistance;
+    private TextView originPlaceName, destinationPlaceName, nextPlaceName, timeEstFinish, placeDistance;
     private static final String TAG = NavigateActivity.class.getSimpleName();
 
     Boolean skipButtonClicked = false, nextButtonClicked = false;
-    int skipButtonClickedCount = 0,  nextButtonClickedCount = 0;
+    int skipButtonClickedCount = 0, nextButtonClickedCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +41,8 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        originPlaceName = findViewById(R.id.textTitlePlace);
+        destinationPlaceName = findViewById(R.id.textDestination);
         nextPlaceName = findViewById(R.id.nextPlaceName);
         timeEstFinish = findViewById(R.id.timeEstFinish);
         placeDistance = findViewById(R.id.placeDistance);
@@ -56,32 +58,75 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
             @Override
             public void onClick(View v) {
                 skipButtonClicked = true;
-
-                if (skipButtonClickedCount == latLngPlot.size()) {
+                String origin, name, lng, lat, orgLng, orgLat, countToString;
+                Double latDouble, lngDouble, orgLatDouble, orgLngDouble;
+                int count;
+                LatLng location, orginLocation;
+                HashMap<String, String> originHashMap, resultHashMap;
+                int latLngPlotSize = latLngPlot.size();
+                if (skipButtonClickedCount == latLngPlotSize - 1) {
                     skipButtonClickedCount = 0;
                 }
 
                 Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
-                HashMap<String, String> resultHashMap = latLngPlot.get(skipButtonClickedCount);
+               // resultHashMap = latLngPlot.get(skipButtonClickedCount);
+                if(skipButtonClickedCount == 0) {
+                    originHashMap = latLngPlot.get(0);
+                    resultHashMap = latLngPlot.get(skipButtonClickedCount + 1);
 
-                String name = resultHashMap.get("name");
-                String lng = resultHashMap.get("lng");
-                String lat = resultHashMap.get("lat");
-                String countToString = resultHashMap.get("count");
+                    origin = originHashMap.get("name");
+                    name = resultHashMap.get("name");
 
+                    orgLng = originHashMap.get("lng");
+                    orgLat = originHashMap.get("lat");
 
-                Double latDouble = Double.parseDouble(lat);
-                Double lngDouble = Double.parseDouble(lng);
-                int count = Integer.parseInt(countToString);
-                LatLng location = new LatLng(latDouble, lngDouble);
+                    lng = resultHashMap.get("lng");
+                    lat = resultHashMap.get("lat");
+                    countToString = resultHashMap.get("count");
 
-                mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
+                    latDouble = Double.parseDouble(lat);
+                    lngDouble = Double.parseDouble(lng);
+                    orgLatDouble = Double.parseDouble(orgLat);
+                    orgLngDouble = Double.parseDouble(orgLng);
 
-                skipButtonClickedCount++;
-                skipButtonClicked = true;
+                    count = Integer.parseInt(countToString);
 
-                mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
-                Log.d(TAG, "Skip Button is onclick: "+name);
+                    location = new LatLng(latDouble, lngDouble);
+                    orginLocation = new LatLng(orgLatDouble, orgLngDouble);
+
+                    mMap.addMarker(new MarkerOptions().position(orginLocation).title(origin)).showInfoWindow();
+                    mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
+                    setRouteInfo(name, origin);
+                    skipButtonClickedCount++;
+                    skipButtonClicked = true;
+
+                    mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
+                    Log.d(TAG, "Skip Button is onclick: " + name);
+                }
+                else{
+                    skipButtonClickedCount++;
+                    resultHashMap = latLngPlot.get(skipButtonClickedCount);
+                    originHashMap = latLngPlot.get(skipButtonClickedCount - 1);
+                   origin = originHashMap.get("name");
+                    name = resultHashMap.get("name");
+                    lng = resultHashMap.get("lng");
+                    lat = resultHashMap.get("lat");
+                    countToString = resultHashMap.get("count");
+                    latDouble = Double.parseDouble(lat);
+                    lngDouble = Double.parseDouble(lng);
+                    count = Integer.parseInt(countToString);
+
+                    location = new LatLng(latDouble, lngDouble);
+
+                    mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
+                    setRouteInfo(name, origin);
+                   // skipButtonClickedCount++;
+                    skipButtonClicked = true;
+
+                    mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
+                    Log.d(TAG, "Skip Button is onclick: " + name);
+                }
+
             }
         });
 
@@ -92,10 +137,19 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 finish();
             }
         });
+
     }
 
+
+    public void setRouteInfo(String name, String origin)
+    {
+        originPlaceName.setText(origin);
+        destinationPlaceName.setText(name);
+    };
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setMyLocationEnabled(true);
     }
 }
+
