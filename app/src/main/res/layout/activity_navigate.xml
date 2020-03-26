@@ -16,12 +16,12 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
-        android:orientation="vertical"
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         android:background="@drawable/simple_bg_curve"
+        android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         tools:layout_editor_absoluteX="4dp">
 
@@ -58,62 +58,60 @@
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:weightSum="2"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:layout_height="wrap_content" >
+            android:orientation="horizontal"
+            android:weightSum="2">
 
             <TextView
                 style="@style/TextAppearance.AppCompat.Small"
-                android:layout_weight="1.5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/MediumBlue"
-                android:text="Total Distance:" />
+                android:layout_weight="1.5"
+                android:text="Total Distance:"
+                android:textColor="@color/MediumBlue" />
 
             <TextView
                 android:id="@+id/placeDistance"
                 style="@style/TextAppearance.AppCompat.Small"
-                android:layout_weight="0.5"
                 android:layout_width="wrap_content"
-                android:textColor="@color/MediumBlue"
                 android:layout_height="wrap_content"
-                android:text="0.5 km" />
+                android:layout_weight="0.5"
+                android:text="0.5 km"
+                android:textColor="@color/MediumBlue" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:weightSum="2"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginBottom="8dp"
-            android:layout_height="wrap_content" >
+            android:orientation="horizontal"
+            android:weightSum="2">
 
             <TextView
                 style="@style/TextAppearance.AppCompat.Small"
-                android:layout_weight="1.5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/Green"
-                android:text="Est Finish Time:" />
+                android:layout_weight="1.5"
+                android:text="Est Finish Time:"
+                android:textColor="@color/Green" />
 
 
             <TextView
                 android:id="@+id/timeEstFinish"
-                android:layout_weight="0.5"
-                android:layout_width="wrap_content"
-                android:textColor="@color/Green"
                 style="@style/TextAppearance.AppCompat.Small"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="17.45" />
+                android:layout_weight="0.5"
+                android:text="17.45"
+                android:textColor="@color/Green" />
 
         </LinearLayout>
-
-
 
 
     </LinearLayout>
@@ -123,32 +121,39 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
     <LinearLayout
-        android:layout_margin="8dp"
-        android:background="@drawable/simple_bg_curve"
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/simple_bg_curve"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Button
             android:id="@+id/skipButton"
-            android:text="Skip To Next"
             style="@style/TextAppearance.AppCompat.Headline"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:background="@drawable/simple_bg_curve"
+            android:layout_height="wrap_content"
+            android:text="Skip To Next" />
 
         <TextView
             android:id="@+id/nextPlaceName"
-            android:gravity="center"
             style="@style/TextAppearance.AppCompat.Medium"
-            android:text="@string/clear_all_label"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/clear_all_label" />
 
     </LinearLayout>
 

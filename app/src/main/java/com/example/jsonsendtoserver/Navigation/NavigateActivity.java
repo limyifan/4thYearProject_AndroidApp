@@ -1,28 +1,52 @@
 package com.example.jsonsendtoserver.Navigation;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.jsonsendtoserver.MapsResult.ui.map.MapsFragment;
 import com.example.jsonsendtoserver.R;
+import com.example.jsonsendtoserver.Services.DataParser;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class NavigateActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class NavigateActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
     private ArrayList<HashMap<String, String>> latLngPlot;
     private GoogleMap mMap;
@@ -30,7 +54,9 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     private static final String TAG = NavigateActivity.class.getSimpleName();
 
     Boolean skipButtonClicked = false, nextButtonClicked = false;
-    int skipButtonClickedCount = 0, nextButtonClickedCount = 0;
+    int skipButtonClickedCount = 0, nextButtonClickedCount = 0, PERMISSION_ID = 44;
+    LatLng currentLocation;
+    FusedLocationProviderClient mFusedLocationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +69,10 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
         originPlaceName = findViewById(R.id.textTitlePlace);
         destinationPlaceName = findViewById(R.id.textDestination);
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        getLastLocation();
+
         nextPlaceName = findViewById(R.id.nextPlaceName);
         timeEstFinish = findViewById(R.id.timeEstFinish);
         placeDistance = findViewById(R.id.placeDistance);
@@ -58,10 +88,9 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
             @Override
             public void onClick(View v) {
                 skipButtonClicked = true;
-                String origin, name, lng, lat, orgLng, orgLat, countToString;
+                String origin, name, lng, lat, orgLng, orgLat;
                 Double latDouble, lngDouble, orgLatDouble, orgLngDouble;
-                int count;
-                LatLng location, orginLocation;
+                LatLng location, orginLocation = null;
                 HashMap<String, String> originHashMap, resultHashMap;
                 int latLngPlotSize = latLngPlot.size();
                 if (skipButtonClickedCount == latLngPlotSize - 1) {
@@ -69,8 +98,8 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 }
 
                 Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
-               // resultHashMap = latLngPlot.get(skipButtonClickedCount);
-                if(skipButtonClickedCount == 0) {
+                //resultHashMap = latLngPlot.get(skipButtonClickedCount);
+                if (skipButtonClickedCount == 0) {
                     originHashMap = latLngPlot.get(0);
                     resultHashMap = latLngPlot.get(skipButtonClickedCount + 1);
 
@@ -82,49 +111,39 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
                     lng = resultHashMap.get("lng");
                     lat = resultHashMap.get("lat");
-                    countToString = resultHashMap.get("count");
 
                     latDouble = Double.parseDouble(lat);
                     lngDouble = Double.parseDouble(lng);
                     orgLatDouble = Double.parseDouble(orgLat);
                     orgLngDouble = Double.parseDouble(orgLng);
 
-                    count = Integer.parseInt(countToString);
-
                     location = new LatLng(latDouble, lngDouble);
                     orginLocation = new LatLng(orgLatDouble, orgLngDouble);
 
-                    mMap.addMarker(new MarkerOptions().position(orginLocation).title(origin)).showInfoWindow();
-                    mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
-                    setRouteInfo(name, origin);
-                    skipButtonClickedCount++;
-                    skipButtonClicked = true;
-
-                    mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
-                    Log.d(TAG, "Skip Button is onclick: " + name);
-                }
-                else{
-                    skipButtonClickedCount++;
+                } else {
                     resultHashMap = latLngPlot.get(skipButtonClickedCount);
                     originHashMap = latLngPlot.get(skipButtonClickedCount - 1);
-                   origin = originHashMap.get("name");
+                    origin = originHashMap.get("name");
                     name = resultHashMap.get("name");
                     lng = resultHashMap.get("lng");
                     lat = resultHashMap.get("lat");
-                    countToString = resultHashMap.get("count");
                     latDouble = Double.parseDouble(lat);
                     lngDouble = Double.parseDouble(lng);
-                    count = Integer.parseInt(countToString);
 
                     location = new LatLng(latDouble, lngDouble);
+                }
 
+                if(orginLocation!= null) {
+                    mMap.clear();
                     mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
                     setRouteInfo(name, origin);
-                   // skipButtonClickedCount++;
+                    skipButtonClickedCount++;
                     skipButtonClicked = true;
 
                     mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
                     Log.d(TAG, "Skip Button is onclick: " + name);
+
+                    new PolylineDraw().execute(orginLocation, location);
                 }
 
             }
@@ -141,15 +160,164 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     }
 
 
-    public void setRouteInfo(String name, String origin)
-    {
+    public void setRouteInfo(String name, String origin) {
         originPlaceName.setText(origin);
         destinationPlaceName.setText(name);
+    }
+
+    ;
+
+    @SuppressLint("MissingPermission")
+    private void getLastLocation() {
+        if (checkPermissions()) {
+            if (isLocationEnabled()) {
+                mFusedLocationClient.getLastLocation().addOnCompleteListener(
+                        new OnCompleteListener<Location>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Location> task) {
+                                Location location = task.getResult();
+                                if (location == null) {
+                                    requestNewLocationData();
+                                } else {
+                                    currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                                }
+                            }
+                        }
+                );
+            } else {
+                Toast.makeText(this, "Turn on location", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        } else {
+            requestPermissions();
+        }
+    }
+
+
+    @SuppressLint("MissingPermission")
+    private void requestNewLocationData() {
+
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(0);
+        mLocationRequest.setFastestInterval(0);
+        mLocationRequest.setNumUpdates(1);
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationClient.requestLocationUpdates(
+                mLocationRequest, mLocationCallback,
+                Looper.myLooper()
+        );
+
+    }
+
+    private LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            Location mLastLocation = locationResult.getLastLocation();
+            currentLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+        }
     };
+
+    private boolean checkPermissions() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        return false;
+    }
+
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
+                PERMISSION_ID
+        );
+    }
+
+    private boolean isLocationEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+                LocationManager.NETWORK_PROVIDER
+        );
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_ID) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLastLocation();
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (checkPermissions()) {
+            getLastLocation();
+        }
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Log.d("Latitude", "disable");
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        Log.d("Latitude", "enable");
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        Log.d("Latitude", "status");
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMyLocationEnabled(true);
     }
+
+
+    private class PolylineDraw extends AsyncTask<LatLng, Void, ArrayList<PolylineOptions>> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected ArrayList<PolylineOptions> doInBackground(LatLng... stgr) {
+            ArrayList<PolylineOptions> polylineOptions = new ArrayList<>();
+            DataParser parser = new DataParser();
+
+            String origin = stgr[0].latitude + "," + stgr[0].longitude;
+            String destination = stgr[1].latitude + "," + stgr[1].longitude;
+
+            Log.d(TAG, "polyline: " + parser.addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0"));
+            polylineOptions.add(parser.addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0"));
+
+            return polylineOptions;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<PolylineOptions> result) {
+            super.onPostExecute(result);
+
+            for (int i = 0; i < result.size(); i++) {
+                mMap.addPolyline(result.get(i));
+            }
+        }
+    }
 }
+
 
