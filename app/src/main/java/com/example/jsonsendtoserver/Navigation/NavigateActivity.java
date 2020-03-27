@@ -30,7 +30,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.jsonsendtoserver.MapsResult.ui.map.MapsFragment;
 import com.example.jsonsendtoserver.R;
 import com.example.jsonsendtoserver.UserPrefActivity;
 import com.example.jsonsendtoserver.Services.DataParser;
@@ -67,7 +66,6 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     int skipButtonClickedCount = 0, nextButtonClickedCount = 0, PERMISSION_ID = 44;
     LatLng currentLocation;
     FusedLocationProviderClient mFusedLocationClient;
-    private HashMap<String, String> originHashMap;
 
 
     @Override
@@ -82,8 +80,6 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
         originPlaceName = findViewById(R.id.textTitlePlace);
         destinationPlaceName = findViewById(R.id.textDestination);
         backButton = findViewById(R.id.backButton);
-
-        nextPlaceName = findViewById(R.id.nextPlaceName);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
@@ -127,19 +123,13 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 orgLat = originHashMap.get("lat");
                 orgLatDouble = Double.parseDouble(orgLat);
                 orgLngDouble = Double.parseDouble(orgLng);
-                orginLocation = new LatLng(orgLatDouble, orgLngDouble);
 
                 if (skipButtonClickedCount == 0) {
                     resultHashMap = latLngPlot.get(skipButtonClickedCount + 1);
 
                     name = resultHashMap.get("name");
-
-<<<<<<< Updated upstream
-                    orgLng = originHashMap.get("lng");
-                    orgLat = originHashMap.get("lat");
                     imgString = resultHashMap.get("img");
-=======
->>>>>>> Stashed changes
+
                     lng = resultHashMap.get("lng");
                     lat = resultHashMap.get("lat");
 
@@ -204,7 +194,6 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 backButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                       // finish();
                         Intent intent = new Intent(NavigateActivity.this, UserPrefActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
