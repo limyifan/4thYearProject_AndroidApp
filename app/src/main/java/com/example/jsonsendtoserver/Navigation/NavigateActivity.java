@@ -67,6 +67,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     int skipButtonClickedCount = 0, nextButtonClickedCount = 0, PERMISSION_ID = 44;
     LatLng currentLocation;
     FusedLocationProviderClient mFusedLocationClient;
+    private HashMap<String, String> originHashMap;
 
 
     @Override
@@ -81,6 +82,8 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
         originPlaceName = findViewById(R.id.textTitlePlace);
         destinationPlaceName = findViewById(R.id.textDestination);
         backButton = findViewById(R.id.backButton);
+
+        nextPlaceName = findViewById(R.id.nextPlaceName);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
@@ -111,28 +114,37 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 HashMap<String, String> originHashMap, resultHashMap;
                 int latLngPlotSize = latLngPlot.size();
                 if (skipButtonClickedCount == latLngPlotSize - 1) {
-                    skipButtonClickedCount = 0;
+                    skipButtonClickedCount = 1;
                 }
 
                 Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
                 //resultHashMap = latLngPlot.get(skipButtonClickedCount);
+
+                originHashMap = latLngPlot.get(0);
+
+                origin = originHashMap.get("name");
+                orgLng = originHashMap.get("lng");
+                orgLat = originHashMap.get("lat");
+                orgLatDouble = Double.parseDouble(orgLat);
+                orgLngDouble = Double.parseDouble(orgLng);
+                orginLocation = new LatLng(orgLatDouble, orgLngDouble);
+
                 if (skipButtonClickedCount == 0) {
-                    originHashMap = latLngPlot.get(0);
                     resultHashMap = latLngPlot.get(skipButtonClickedCount + 1);
 
-                    origin = originHashMap.get("name");
                     name = resultHashMap.get("name");
 
+<<<<<<< Updated upstream
                     orgLng = originHashMap.get("lng");
                     orgLat = originHashMap.get("lat");
                     imgString = resultHashMap.get("img");
+=======
+>>>>>>> Stashed changes
                     lng = resultHashMap.get("lng");
                     lat = resultHashMap.get("lat");
 
                     latDouble = Double.parseDouble(lat);
                     lngDouble = Double.parseDouble(lng);
-                    orgLatDouble = Double.parseDouble(orgLat);
-                    orgLngDouble = Double.parseDouble(orgLng);
 
                     location = new LatLng(latDouble, lngDouble);
                     originLocation = new LatLng(orgLatDouble, orgLngDouble);
@@ -151,8 +163,8 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 else{
                     skipButtonClickedCount++;
                     resultHashMap = latLngPlot.get(skipButtonClickedCount);
-                    originHashMap = latLngPlot.get(skipButtonClickedCount - 1);
-                    origin = originHashMap.get("name");
+                    //originHashMap = latLngPlot.get(skipButtonClickedCount - 1);
+                    //origin = originHashMap.get("name");
                     name = resultHashMap.get("name");
                     orgLng = originHashMap.get("lng");
                     orgLat = originHashMap.get("lat");
