@@ -1,6 +1,9 @@
 package com.example.jsonsendtoserver.Services;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -10,7 +13,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
- public class DataParser {
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+
+public class DataParser {
     public List<List<HashMap<String,String>>> parse(JSONObject jObject){
         List<List<HashMap<String, String>>> routes = new ArrayList<>() ;
         JSONArray jRoutes;
@@ -77,5 +83,55 @@ import java.util.List;
             poly.add(p);
         }
         return poly;
+    }
+
+    public PolylineOptions addPolyline(String url) {
+        try {
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            String data = client.newCall(request).execute().body().string();
+            return parserTaskToPolyLine(data);
+
+        } catch (Exception e) {
+            Log.e("Background Task", e.toString());
+        }
+        return null;
+    }
+
+    private PolylineOptions parserTaskToPolyLine(String jsonData) {
+        JSONObject jObject;
+        List<List<HashMap<String, String>>> routes = null;
+        PolylineOptions lineOptions = new PolylineOptions();
+
+        try {
+            jObject = new JSONObject(jsonData);
+            DataParser parser = new DataParser();
+
+            routes = parser.parse(jObject);
+
+            ArrayList<LatLng> points;
+            for (int i = 0; i < routes.size(); i++) {
+                points = new ArrayList<>();
+                List<HashMap<String, String>> path = routes.get(i);
+                for (int j = 0; j < path.size(); j++) {
+                    HashMap<String, String> point = path.get(j);
+                    double lat = Double.parseDouble(point.get("lat"));
+                    double lng = Double.parseDouble(point.get("lng"));
+                    LatLng position = new LatLng(lat, lng);
+                    points.add(position);
+                }
+                lineOptions.addAll(points);
+                lineOptions.width(10);
+            }
+        } catch (Exception e) {
+            Log.e("parserTaskToPolyLine", e.toString());
+            e.printStackTrace();
+        }
+
+        Log.d("onPostExecute", "lineOptions result zone: " + lineOptions.getPoints().toString());
+        return lineOptions;
+
     }
 }

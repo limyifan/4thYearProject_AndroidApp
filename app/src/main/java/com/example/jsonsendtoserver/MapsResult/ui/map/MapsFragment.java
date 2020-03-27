@@ -22,7 +22,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 
 import android.graphics.Color;
@@ -56,7 +55,6 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.util.List;
-import java.util.zip.Inflater;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -191,8 +189,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         String log = latLngPlot.toString();
         Log.d("TAG", "LATLNGPLOT IS" + log);
 
-//        int length = latLngPlot.size() - 1 > 5 ? 5 : latLngPlot.size() - 1;
-//        for (int i = 0; i < length; i++) {
         for (int i = 0; i < latLngPlot.size(); i++) {
 
             HashMap<String, String> resultHashMap = latLngPlot.get(i);
@@ -257,7 +253,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         });
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
-        new LoopMarker().execute();
+        //new LoopMarker().execute();
 
         //fit all markers on zoom
         LatLngBounds bounds = calculateBounds(mMarkerArray);
@@ -466,6 +462,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         @Override
         protected ArrayList<PolylineOptions> doInBackground(Void... stgr) {
             ArrayList<PolylineOptions> polylineOptions = new ArrayList<>();
+            DataParser parser = new DataParser();
 
             //int length = latLngs.size() - 1 > 5 ? 5 : latLngs.size() - 1;
             int length = latLngPlot.size()-1;
@@ -474,10 +471,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
                 Log.d(TAG, "polyline: "+ "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0");
                 if (i==0) {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
+                    polylineOptions.add(parser.addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
                 }
                 else {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
+                    polylineOptions.add(parser.addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
                  }
             }
             return polylineOptions;
@@ -504,54 +501,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
-    public PolylineOptions addMarker(String url) {
-        try {
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
-            String data = client.newCall(request).execute().body().string();
-            return parserTaskToPolyLine(data);
 
-        } catch (Exception e) {
-            Log.e("Background Task", e.toString());
-        }
-        return null;
-    }
-
-    private PolylineOptions parserTaskToPolyLine(String jsonData) {
-        JSONObject jObject;
-        List<List<HashMap<String, String>>> routes = null;
-        PolylineOptions lineOptions = new PolylineOptions();
-
-        try {
-            jObject = new JSONObject(jsonData);
-            DataParser parser = new DataParser();
-
-            routes = parser.parse(jObject);
-
-            ArrayList<LatLng> points;
-            for (int i = 0; i < routes.size(); i++) {
-                points = new ArrayList<>();
-                List<HashMap<String, String>> path = routes.get(i);
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-                    points.add(position);
-                }
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-            }
-        } catch (Exception e) {
-            Log.e("parserTaskToPolyLine", e.toString());
-            e.printStackTrace();
-        }
-
-        Log.d("onPostExecute", "lineOptions result zone: " + lineOptions.getPoints().toString());
-        return lineOptions;
-
-    }
 }
 

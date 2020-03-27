@@ -6,54 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-                            <TextView
-                                android:id="@+id/origin"
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:text="Origin"
-                                android:textSize="30sp" />
-
-                            <TextView
-                                android:id="@+id/destination"
-                                android:layout_width="match_parent"
-                                android:layout_height="50dp"
-                                android:text="Destination"
-                                android:textSize="30dp" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="42dp"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/distance"
-                                    android:layout_width="296dp"
-                                    android:layout_height="match_parent"
-                                    android:text="Total Distance"
-                                    android:textSize="30dp" />
-
-                                <TextView
-                                    android:id="@+id/distanceVal"
-                                    android:layout_width="114dp"
-
-                                    android:layout_height="match_parent"
-                                    android:text="distanceVal"
-                                    android:textSize="20dp"
-                                    android:gravity="center"/>
-                            </LinearLayout>
-
-
-    </LinearLayout>
-
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/nav_view"
         android:layout_width="0dp"
@@ -70,32 +22,26 @@
     </com.google.android.material.bottomnavigation.BottomNavigationView>
 
 
-<!--    <androidx.appcompat.widget.Toolbar-->
-<!--        android:id="@+id/toolbar"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:background="?attr/colorPrimary"-->
-<!--        android:fitsSystemWindows="true"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:title="TripIT"-->
-<!--        app:titleTextColor="?attr/colorPrimaryDark" />-->
-
     <fragment
         android:id="@+id/nav_host_fragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="412dp"
-        android:layout_height="618dp"
+        android:layout_height="0dp"
         app:defaultNavHost="true"
-        app:layout_constraintBottom_toTopOf="@+id/nav_view"
+        app:layout_constraintBottom_toTopOf="@+id/beginButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintVertical_bias="1.0"
+        app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/mobile_navigation" />
+
+    <Button
+        android:id="@+id/beginButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Begin"
+        app:layout_constraintBottom_toTopOf="@+id/nav_view" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

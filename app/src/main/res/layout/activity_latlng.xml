@@ -104,7 +104,7 @@
 
         <Button
             android:id="@+id/goButton"
-            android:layout_width="290dp"
+            android:layout_width="311dp"
             android:layout_height="51dp"
             android:layout_gravity="center"
             android:text="Let's GO !!!"
