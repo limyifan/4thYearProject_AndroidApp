@@ -15,18 +15,24 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.content.Context;
+import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jsonsendtoserver.MapsResult.ui.map.MapsFragment;
 import com.example.jsonsendtoserver.R;
+import com.example.jsonsendtoserver.UserPrefActivity;
 import com.example.jsonsendtoserver.Services.DataParser;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -38,6 +44,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -50,13 +57,17 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
     private ArrayList<HashMap<String, String>> latLngPlot;
     private GoogleMap mMap;
+    private Marker mMarker;
     private TextView originPlaceName, destinationPlaceName, nextPlaceName, timeEstFinish, placeDistance;
+    Button backButton;
     private static final String TAG = NavigateActivity.class.getSimpleName();
+
 
     Boolean skipButtonClicked = false, nextButtonClicked = false;
     int skipButtonClickedCount = 0, nextButtonClickedCount = 0, PERMISSION_ID = 44;
     LatLng currentLocation;
     FusedLocationProviderClient mFusedLocationClient;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,13 +80,14 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
         originPlaceName = findViewById(R.id.textTitlePlace);
         destinationPlaceName = findViewById(R.id.textDestination);
+        backButton = findViewById(R.id.backButton);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
-        nextPlaceName = findViewById(R.id.nextPlaceName);
         timeEstFinish = findViewById(R.id.timeEstFinish);
         placeDistance = findViewById(R.id.placeDistance);
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -84,12 +96,17 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         Button skipButton = findViewById(R.id.skipButton);
+
+
+
         skipButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 skipButtonClicked = true;
                 String origin, name, lng, lat, orgLng, orgLat;
                 Double latDouble, lngDouble, orgLatDouble, orgLngDouble;
+                int count;
+                String imgString;
                 LatLng location, orginLocation = null;
                 HashMap<String, String> originHashMap, resultHashMap;
                 int latLngPlotSize = latLngPlot.size();
@@ -108,7 +125,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
                     orgLng = originHashMap.get("lng");
                     orgLat = originHashMap.get("lat");
-
+                    imgString = resultHashMap.get("img");
                     lng = resultHashMap.get("lng");
                     lat = resultHashMap.get("lat");
 
@@ -120,7 +137,18 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                     location = new LatLng(latDouble, lngDouble);
                     orginLocation = new LatLng(orgLatDouble, orgLngDouble);
 
-                } else {
+                    mMap.addMarker(new MarkerOptions().position(orginLocation).title(origin)).showInfoWindow();
+                    mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
+                    setRouteInfo(name, origin);
+
+                    skipButtonClickedCount++;
+                    skipButtonClicked = true;
+
+                    mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
+                    Log.d(TAG, "Skip Button is onclick: " + name);
+                }
+                else{
+                    skipButtonClickedCount++;
                     resultHashMap = latLngPlot.get(skipButtonClickedCount);
                     originHashMap = latLngPlot.get(skipButtonClickedCount - 1);
                     origin = originHashMap.get("name");
@@ -135,7 +163,12 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
                 if(orginLocation!= null) {
                     mMap.clear();
-                    mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
+                   MarkerOptions options = new MarkerOptions()
+                            .position(location)
+                            .title(name);
+                   mMarker = mMap.addMarker(options);
+                   mMarker.showInfoWindow();
+
                     setRouteInfo(name, origin);
                     skipButtonClickedCount++;
                     skipButtonClicked = true;
@@ -145,6 +178,17 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
                     new PolylineDraw().execute(orginLocation, location);
                 }
+              //  mMap.setOnMarkerClickListener(new View.OnClickListener())
+                backButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                       // finish();
+                        Intent intent = new Intent(NavigateActivity.this, UserPrefActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+                    }
+                });
 
             }
         });
@@ -156,6 +200,35 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 finish();
             }
         });
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                marker.showInfoWindow();
+                return false;
+            }
+        });
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+            @Override
+            public View getInfoWindow(Marker marker) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+                View placeInfo = getLayoutInflater().inflate(R.layout.info_window_layout, null);
+
+                TextView title = (TextView) placeInfo.findViewById(R.id.title);
+                //  title.setText(marker.getTitle());
+                title.setText("test");
+                TextView distance = (TextView) placeInfo.findViewById(R.id.distance);
+                //distance.setText(marker.getSnippet());
+
+                ImageView markerImage = (ImageView) placeInfo.findViewById(R.id.markerImage);
+
+                return placeInfo;
+            }
+        });
+mapFragment
 
     }
 
@@ -285,7 +358,9 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnInfoWindowClickListener(this);
         mMap.setMyLocationEnabled(true);
+
     }
 
 
@@ -318,6 +393,12 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
             }
         }
     }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+    }
+
 }
 
 

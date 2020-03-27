@@ -141,17 +141,18 @@
 
         <Button
             android:id="@+id/skipButton"
+            android:text="Next"
             style="@style/TextAppearance.AppCompat.Headline"
             android:layout_width="match_parent"
             android:background="@drawable/simple_bg_curve"
             android:layout_height="wrap_content"
             android:text="Skip To Next" />
 
-        <TextView
-            android:id="@+id/nextPlaceName"
+        <Button
+            android:id="@+id/backButton"
             style="@style/TextAppearance.AppCompat.Medium"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="395dp"
+            android:layout_height="38dp"
             android:gravity="center"
             android:text="@string/clear_all_label" />
 
