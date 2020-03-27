@@ -145,8 +145,7 @@
             style="@style/TextAppearance.AppCompat.Headline"
             android:layout_width="match_parent"
             android:background="@drawable/simple_bg_curve"
-            android:layout_height="wrap_content"
-            android:text="Skip To Next" />
+            android:layout_height="wrap_content" />
 
         <Button
             android:id="@+id/backButton"

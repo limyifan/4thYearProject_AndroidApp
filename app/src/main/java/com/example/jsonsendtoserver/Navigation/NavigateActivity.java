@@ -107,7 +107,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 Double latDouble, lngDouble, orgLatDouble, orgLngDouble;
                 int count;
                 String imgString;
-                LatLng location, orginLocation = null;
+                LatLng location, originLocation = null;
                 HashMap<String, String> originHashMap, resultHashMap;
                 int latLngPlotSize = latLngPlot.size();
                 if (skipButtonClickedCount == latLngPlotSize - 1) {
@@ -135,15 +135,16 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                     orgLngDouble = Double.parseDouble(orgLng);
 
                     location = new LatLng(latDouble, lngDouble);
-                    orginLocation = new LatLng(orgLatDouble, orgLngDouble);
+                    originLocation = new LatLng(orgLatDouble, orgLngDouble);
 
-                    mMap.addMarker(new MarkerOptions().position(orginLocation).title(origin)).showInfoWindow();
+                    mMap.addMarker(new MarkerOptions().position(originLocation).title(origin)).showInfoWindow();
                     mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
                     setRouteInfo(name, origin);
 
                     skipButtonClickedCount++;
                     skipButtonClicked = true;
 
+                    new PolylineDraw().execute(originLocation, location);
                     mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
                     Log.d(TAG, "Skip Button is onclick: " + name);
                 }
@@ -153,31 +154,40 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                     originHashMap = latLngPlot.get(skipButtonClickedCount - 1);
                     origin = originHashMap.get("name");
                     name = resultHashMap.get("name");
+                    orgLng = originHashMap.get("lng");
+                    orgLat = originHashMap.get("lat");
+                    imgString = resultHashMap.get("img");
                     lng = resultHashMap.get("lng");
                     lat = resultHashMap.get("lat");
+
                     latDouble = Double.parseDouble(lat);
                     lngDouble = Double.parseDouble(lng);
+                    orgLatDouble = Double.parseDouble(orgLat);
+                    orgLngDouble = Double.parseDouble(orgLng);
 
                     location = new LatLng(latDouble, lngDouble);
+                    originLocation = new LatLng(orgLatDouble, orgLngDouble);
+
+                    if(originLocation!= null) {
+                        mMap.clear();
+                        MarkerOptions options = new MarkerOptions()
+                                .position(location)
+                                .title(name);
+                        mMap.addMarker(new MarkerOptions().position(originLocation).title(origin)).showInfoWindow();
+                        mMarker = mMap.addMarker(options);
+                        mMarker.showInfoWindow();
+
+                        setRouteInfo(name, origin);
+
+                        mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
+                        Log.d(TAG, "Skip Button is onclick: " + name);
+
+                        new PolylineDraw().execute(originLocation, location);
+                    }
+
                 }
 
-                if(orginLocation!= null) {
-                    mMap.clear();
-                   MarkerOptions options = new MarkerOptions()
-                            .position(location)
-                            .title(name);
-                   mMarker = mMap.addMarker(options);
-                   mMarker.showInfoWindow();
 
-                    setRouteInfo(name, origin);
-                    skipButtonClickedCount++;
-                    skipButtonClicked = true;
-
-                    mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
-                    Log.d(TAG, "Skip Button is onclick: " + name);
-
-                    new PolylineDraw().execute(orginLocation, location);
-                }
               //  mMap.setOnMarkerClickListener(new View.OnClickListener())
                 backButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -200,14 +210,14 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 finish();
             }
         });
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+        /*mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
                 marker.showInfoWindow();
                 return false;
             }
-        });
-        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+        });*/
+        /*mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
             @Override
             public View getInfoWindow(Marker marker) {
                 return null;
@@ -227,8 +237,8 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
                 return placeInfo;
             }
-        });
-mapFragment
+        });*/
+
 
     }
 
@@ -358,11 +368,10 @@ mapFragment
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setOnInfoWindowClickListener(this);
+      //  mMap.setOnInfoWindowClickListener();
         mMap.setMyLocationEnabled(true);
 
     }
-
 
     private class PolylineDraw extends AsyncTask<LatLng, Void, ArrayList<PolylineOptions>> {
         @Override
@@ -392,11 +401,6 @@ mapFragment
                 mMap.addPolyline(result.get(i));
             }
         }
-    }
-
-    @Override
-    public void onInfoWindowClick(Marker marker) {
-
     }
 
 }
