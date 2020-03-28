@@ -26,6 +26,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.NumberPicker;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,7 +55,7 @@ import com.google.android.material.chip.ChipGroup;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
-public class UserPrefActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
+public class UserPrefActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, NumberPicker.OnValueChangeListener,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private String TAG = UserPrefActivity.class.getSimpleName();
     NetworkCall networkCall;
@@ -73,7 +74,8 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
     // integer for permissions results request
     private static final int ALL_PERMISSIONS_RESULT = 1011;
 
-    private String latitude, longitude, time;
+    private String latitude, longitude;
+    int time;
     private ArrayList<String> pref = new ArrayList<>();
     String[] listItems;
     boolean[] checkedItems;
@@ -90,14 +92,22 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
         networkCall = new NetworkCall();
 
         final ChipGroup prefSelectList = findViewById(R.id.tvItemSelected);
-        SeekBar seekBar = findViewById(R.id.timeSeekbar);
+        NumberPicker seekBar = findViewById(R.id.NumberPicker);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
-        final TextView textView = findViewById(R.id.timeDisplay);
+        //final TextView textView = findViewById(R.id.timeDisplay);
 
+        seekBar.setMinValue(0);
+        seekBar.setMaxValue(10);
+        seekBar.setFormatter(new NumberPicker.Formatter() {
+            @Override
+            public String format(int value) {
+                return String.format("%02d", value);
+            }
+        });
         setSupportActionBar(myToolbar);
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int progress = 0;
+        seekBar.setOnValueChangedListener(this);
+            /*int progress = 0;
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progresValue, boolean fromUser) {
@@ -116,7 +126,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                 textView.setText(String.valueOf(progress));
                 time = String.valueOf(progress * 60);
             }
-        });
+        });*/
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -237,6 +247,11 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
             }
 
         });
+    }
+
+    @Override
+    public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+        time = picker.getValue();
     }
 
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {
@@ -404,6 +419,9 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
     private void requestPermission() {
         ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, 1);
     }
+
+
+
 
     protected class ParseJSON extends AsyncTask<Void, Void, ArrayList<HashMap<String, String>>> {
 
