@@ -77,7 +77,7 @@ public class TripPlanFragment extends Fragment {
         @Override
         protected ArrayList<HashMap<String, String>> doInBackground(Void... arg0) {
             HttpHandler handler = new HttpHandler();
-            String url = "https://201.team/api/v2/GetTime_1.php/?";
+            String url = "https://201.team/api/v2/GetTime_Client.php/?";
             ArrayList<HashMap<String, String>> result = new ArrayList<>();
 
             for (int i = 0; i < latLngPlot.size()-1; i++) {
