@@ -251,7 +251,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
 
     @Override
     public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-        time = picker.getValue();
+        time = picker.getValue() * 60;
     }
 
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {
@@ -454,8 +454,8 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     prefString += "&pref" + j + "=" + pref.get(i);
 
                 }
-                latitude = "54.009";
-                longitude = "-6.4049";
+//                latitude = "54.009";
+//                longitude = "-6.4049";
                 jsonString = handler.makeServiceCall(url + "?lat=" + latitude + "&lng=" + longitude+ prefString +"&time="+time);
                 Log.d(TAG, "Response from url: " + url + "?lat=" + latitude + "&lng=" + longitude  + prefString + "&time="+time);
             }
@@ -482,7 +482,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     resultNew.add(current);
 
                     for (int i = 0; i < candidates.length(); i++) {
-                        if(i%2 == 0) {
+                        //if(i%2 == 0) {
                             HashMap<String, String> candidate = new HashMap<>();
 
                             JSONObject c = candidates.getJSONObject(i);
@@ -508,7 +508,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                             count++;
                             Log.d(TAG, "Place id is: " + place_id);
                             resultNew.add(candidate);
-                        }
+                        //}
                     }
                 } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
