@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jsonsendtoserver.R;
+import com.example.jsonsendtoserver.Services.HttpHandler;
 import com.example.jsonsendtoserver.UserPrefActivity;
 import com.example.jsonsendtoserver.Services.DataParser;
 import com.google.android.gms.common.ConnectionResult;
@@ -58,6 +59,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,10 +71,10 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 public class NavigateActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    private ArrayList<HashMap<String, String>> latLngPlot;
+    public ArrayList<HashMap<String, String>> latLngPlot;
     private GoogleMap mMap;
     private Marker mMarker, markerDestination;
-    private TextView originPlaceName, destinationPlaceName, nextPlaceName, timeEstFinish, placeDistance;
+    private TextView originPlaceName, destinationPlaceName, nextPlaceName, timeEstFinish, placeDistance, placeType;
     Button backButton;
     private static final String TAG = NavigateActivity.class.getSimpleName();
     private ArrayList<String> permissionsToRequest;
@@ -94,16 +98,18 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigate);
         latLngPlot = (ArrayList<HashMap<String, String>>) getIntent().getSerializableExtra("result2");
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
+       getTravelTimes();
         originPlaceName = findViewById(R.id.textTitlePlace);
         destinationPlaceName = findViewById(R.id.textDestination);
         backButton = findViewById(R.id.backButton);
+        placeType = findViewById(R.id.placeType);
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -141,10 +147,10 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
             @Override
             public void onClick(View v) {
                 skipButtonClicked = true;
-                String  name, lng, lat, orgLng, orgLat;
+                String  name, lng, lat, orgLng, orgLat, stringPlaceType;
                 Double latDouble, lngDouble;
                 int count;
-                String imgString;
+                String imgString, travelTime;
                 LatLng location;
                 HashMap<String, String> resultHashMap;
                 int latLngPlotSize = latLngPlot.size();
@@ -160,11 +166,16 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                     //origin = originHashMap.get("name");
                     name = resultHashMap.get("name");
                     imgString = resultHashMap.get("img");
+                    stringPlaceType = resultHashMap.get("place_type");
                     lng = resultHashMap.get("lng");
                     lat = resultHashMap.get("lat");
+                    travelTime = resultHashMap.get("timeTravel");
+                    Log.d("travelObject", "travel time is"+travelTime);
 
                     latDouble = Double.parseDouble(lat);
                     lngDouble = Double.parseDouble(lng);
+
+
 
                     location = new LatLng(latDouble, lngDouble);
 
@@ -183,7 +194,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
                         markerDestination.setPosition(location);
                         markerDestination.setTitle(name);
-                        setRouteInfo(name, origin);
+                        setRouteInfo(name, origin, stringPlaceType);
 
                         mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
                         Log.d(TAG, "Skip Button is onclick: " + name);
@@ -423,10 +434,42 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
         ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, 1);
     }
 
+    public void getTravelTimes() {
+        HttpHandler handler = new HttpHandler();
+        String url = "https://201.team/api/v2/GetTime_Client.php/?";
+        ArrayList<HashMap<String, String>> result = new ArrayList<>();
+        int latLngPlotSize = latLngPlot.size();
 
-    public void setRouteInfo(String name, String origin) {
+        for (int i = 0; i < latLngPlot.size()-1; i++) {
+            HashMap<String, String> resultHashMap = latLngPlot.get(i);
+            String lng1 = resultHashMap.get("lng");
+            String lat1 = resultHashMap.get("lat");
+
+            HashMap<String, String> resultHashMap2 = latLngPlot.get(i+1);
+            String lng2 = resultHashMap2.get("lng");
+            String lat2 = resultHashMap2.get("lat");
+            try {
+
+                String url2 = url + "originLat=" + lat1 + "&originLng=" + lng1 + "&destinationLat="+lat2 + "&destinationLng="+lng2;
+                String jsonString = handler.makeServiceCall(url2);
+
+                JSONObject jsonObj = new JSONObject(jsonString);
+                JSONObject candidates = jsonObj.getJSONObject("TravelObject");
+
+                latLngPlot.get(i).put("timeTravel",candidates.getString("travelTime"));
+                Log.d(TAG,"size : "+ latLngPlot.get(i).get("name")+ " "+ latLngPlot.get(i).get("timeTravel"));
+
+                Log.d(TAG, "doInBackground: "+url2);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public void setRouteInfo(String name, String origin, String stringPlaceType) {
         originPlaceName.setText(origin);
         destinationPlaceName.setText(name);
+        placeType.setText(stringPlaceType);
     }
 
     @Override
