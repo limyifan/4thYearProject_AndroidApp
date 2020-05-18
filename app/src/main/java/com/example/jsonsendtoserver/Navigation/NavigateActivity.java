@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
@@ -75,7 +76,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     private GoogleMap mMap;
     private Marker mMarker, markerDestination;
     private TextView originPlaceName, destinationPlaceName, nextPlaceName, timeEstFinish, placeDistance, placeType;
-    Button backButton;
+    AppCompatButton backButton;
     private static final String TAG = NavigateActivity.class.getSimpleName();
     private ArrayList<String> permissionsToRequest;
     private ArrayList<String> permissionsRejected = new ArrayList<>();
@@ -137,7 +138,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        Button skipButton = findViewById(R.id.skipButton);
+        AppCompatButton skipButton = findViewById(R.id.skipButton);
 
         HashMap<String, String> originHashMap = latLngPlot.get(0);
         final String origin = originHashMap.get("name");

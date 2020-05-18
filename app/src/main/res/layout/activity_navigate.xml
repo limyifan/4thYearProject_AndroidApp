@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
-        android:background="@drawable/simple_bg_curve"
+        android:background="@drawable/display_box_bg"
         android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         tools:layout_editor_absoluteX="4dp">
@@ -151,20 +151,21 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/skipButton"
             android:text="Next"
-            style="@style/TextAppearance.AppCompat.Headline"
             android:layout_width="match_parent"
             android:layout_weight="0.95"
             android:background="@drawable/simple_bg_curve"
-            android:layout_height="wrap_content" />
+            android:textColor="@color/Dark"
+            android:layout_height="38dp" />
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/backButton"
-            style="@style/TextAppearance.AppCompat.Medium"
-            android:layout_width="395dp"
+            android:textColor="@color/Dark"
+            android:layout_width="match_parent"
             android:layout_height="38dp"
+            android:background="@drawable/display_box_bg"
             android:gravity="center"
             android:text="@string/restart_trip_label" />
 

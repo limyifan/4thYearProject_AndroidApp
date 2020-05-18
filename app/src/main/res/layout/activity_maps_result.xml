@@ -42,6 +42,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Begin"
+        android:textColor="@color/Black"
         app:layout_constraintBottom_toTopOf="@+id/nav_view" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

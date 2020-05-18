@@ -12,6 +12,7 @@
         <item name="windowNoTitle">true</item>
         <item name="colorPrimary">#FFAF05</item>
         <item name="colorPrimaryDark">@color/DarkSlateGray</item>
+        <item name="colorButtonNormal">@color/LightGrey</item>
     </style>
 <style name = "NumberPickerTheme" parent="Theme.AppCompat.Light">
     <item name="colorAccent">@android:color/white</item>
