@@ -59,7 +59,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private String TAG = UserPrefActivity.class.getSimpleName();
     NetworkCall networkCall;
-    private static String url = "https://201.team/api/v2/GetRoute.php/";
+    private static String url = "https://201.team/api/v3/GetRoute.php/";
     private ProgressDialog pDialog;
     public Location location;
     private GoogleApiClient googleApiClient;
