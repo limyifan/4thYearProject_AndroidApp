@@ -34,6 +34,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.jsonsendtoserver.Model.PlacesNavi;
 import com.example.jsonsendtoserver.R;
 import com.example.jsonsendtoserver.Services.HttpHandler;
 import com.example.jsonsendtoserver.UserPrefActivity;
@@ -76,7 +77,6 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     private GoogleMap mMap;
     private Marker mMarker, markerDestination;
     private TextView originPlaceName, destinationPlaceName, nextPlaceName, timeEstFinish, placeDistance, placeType;
-    AppCompatButton backButton;
     private static final String TAG = NavigateActivity.class.getSimpleName();
     private ArrayList<String> permissionsToRequest;
     private ArrayList<String> permissionsRejected = new ArrayList<>();
@@ -84,7 +84,6 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     // integer for permissions results request
     private static final int ALL_PERMISSIONS_RESULT = 1011;
     private static final long UPDATE_INTERVAL = 5000, FASTEST_INTERVAL = 5000; // = 5 seconds
-
 
 
     Boolean skipButtonClicked = false, nextButtonClicked = false;
@@ -106,10 +105,13 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
         originPlaceName = findViewById(R.id.textTitlePlace);
         destinationPlaceName = findViewById(R.id.textDestination);
-        backButton = findViewById(R.id.backButton);
+        AppCompatButton backButton = findViewById(R.id.backButton);
         placeType = findViewById(R.id.placeType);
+        placeDistance = findViewById(R.id.placeDistance);
+        timeEstFinish = findViewById(R.id.timeEstFinish);
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -128,10 +130,6 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 addConnectionCallbacks(this).
                 addOnConnectionFailedListener(this).build();
 
-        timeEstFinish = findViewById(R.id.timeEstFinish);
-        placeDistance = findViewById(R.id.placeDistance);
-
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -147,7 +145,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
             @Override
             public void onClick(View v) {
                 skipButtonClicked = true;
-                String  name, lng, lat, orgLng, orgLat, stringPlaceType;
+                String name, lng, lat, orgLng, orgLat, stringPlaceType;
                 Double latDouble, lngDouble;
                 int count;
                 String imgString, travelTime;
@@ -160,52 +158,59 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
                 Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
 
-                    skipButtonClickedCount++;
-                    resultHashMap = latLngPlot.get(skipButtonClickedCount);
-                    //originHashMap = latLngPlot.get(skipButtonClickedCount - 1);
-                    //origin = originHashMap.get("name");
-                    name = resultHashMap.get("name");
-                    imgString = resultHashMap.get("img");
-                    stringPlaceType = resultHashMap.get("place_type");
-                    lng = resultHashMap.get("lng");
-                    lat = resultHashMap.get("lat");
-                    travelTime = resultHashMap.get("timeTravel");
-                    Log.d("travelObject", "travel time is"+travelTime);
+                skipButtonClickedCount++;
+                resultHashMap = latLngPlot.get(skipButtonClickedCount);
 
-                    latDouble = Double.parseDouble(lat);
-                    lngDouble = Double.parseDouble(lng);
+                name = resultHashMap.get("name");
+                stringPlaceType = resultHashMap.get("place_type");
+                lng = resultHashMap.get("lng");
+                lat = resultHashMap.get("lat");
+                travelTime = resultHashMap.get("timeTravel");
+                Log.d("travelObject", "travel time is" + travelTime);
+
+                latDouble = Double.parseDouble(lat);
+                lngDouble = Double.parseDouble(lng);
 
 
+                location = new LatLng(latDouble, lngDouble);
 
-                    location = new LatLng(latDouble, lngDouble);
+                if (originLocation != null) {
+                    mMap.clear();
 
-                    if(originLocation!= null) {
-                        mMap.clear();
+                    mMarker = mMap.addMarker(new MarkerOptions()
+                            .position(originLocation)
+                            .title("Current Location"));
 
-                        mMarker = mMap.addMarker(new MarkerOptions()
-                                .position(originLocation)
-                                .title("Current Location"));
+                    markerDestination = mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(latDouble, lngDouble))
+                            .title(name));
 
-                        markerDestination = mMap.addMarker(new MarkerOptions()
-                                .position(new LatLng(latDouble,lngDouble))
-                                .title(name));
+                    mMarker.setPosition(originLocation);
 
-                        mMarker.setPosition(originLocation);
+                    markerDestination.setPosition(location);
+                    markerDestination.setTitle(name);
+                    setRouteInfo(name, origin, stringPlaceType);
 
-                        markerDestination.setPosition(location);
-                        markerDestination.setTitle(name);
-                        setRouteInfo(name, origin, stringPlaceType);
+                    mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
+                    Log.d(TAG, "Skip Button is onclick: " + name);
 
-                        mMap.animateCamera((CameraUpdateFactory.newLatLngZoom(location, 15)));
-                        Log.d(TAG, "Skip Button is onclick: " + name);
+                    new PolylineDraw().execute(originLocation, location);
+                }
 
-                        new PolylineDraw().execute(originLocation, location);
-                    }
 
-              //  mMap.setOnMarkerClickListener(new View.OnClickListener())
-                backButton.setOnClickListener(new View.OnClickListener() {
+            }
+        });
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                AlertDialog.Builder mBuilder = new AlertDialog.Builder(NavigateActivity.this);
+                mBuilder.setTitle(R.string.restart_trip);
+                mBuilder.setCancelable(false);
+                mBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialogInterface, int which) {
                         Intent intent = new Intent(NavigateActivity.this, UserPrefActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
@@ -213,9 +218,24 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                     }
                 });
 
+                mBuilder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+                final AlertDialog mDialog = mBuilder.create();
+                mDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface arg0) {
+                        mDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                        mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    }
+                });
+                mDialog.show();
             }
         });
-
 
 
         toolbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_arrow_back_black_24dp));
@@ -258,24 +278,23 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     }
 
 
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        HashMap<String,String> originMap = latLngPlot.get(0);
+        HashMap<String, String> originMap = latLngPlot.get(0);
         String name = originMap.get("name");
 
         Double latDouble = Double.parseDouble(originMap.get("lat"));
         Double lngDouble = Double.parseDouble(originMap.get("lng"));
 
-        HashMap<String,String> resultHashMap = latLngPlot.get(1);
+        HashMap<String, String> resultHashMap = latLngPlot.get(1);
         String name1 = resultHashMap.get("name");
 
         Double latDouble1 = Double.parseDouble(resultHashMap.get("lat"));
         Double lngDouble1 = Double.parseDouble(resultHashMap.get("lng"));
 
-        originLocation = new LatLng(latDouble,lngDouble);
+        originLocation = new LatLng(latDouble, lngDouble);
         mMap.setMyLocationEnabled(true);
 
         mMarker = mMap.addMarker(new MarkerOptions()
@@ -283,7 +302,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 .title(name));
 
         markerDestination = mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(latDouble1,lngDouble1))
+                .position(new LatLng(latDouble1, lngDouble1))
                 .title(name1));
 
         mMarker.setPosition(originLocation);
@@ -317,6 +336,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
             googleApiClient.connect();
         }
     }
+
     private boolean checkPlayServices() {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
@@ -344,10 +364,10 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
         }
 
         // Permissions ok, we get last location
-         Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
 
         if (location != null) {
-            originLocation = new LatLng(location.getLatitude(),location.getLongitude());
+            originLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
         }
 
@@ -382,12 +402,12 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
     public void onLocationChanged(Location location) {
 
         if (location != null) {
-            originLocation = new LatLng(location.getLatitude(),location.getLongitude());
+            originLocation = new LatLng(location.getLatitude(), location.getLongitude());
             //mMarker.setPosition(originLocation);
 
-             if(mMarker != null) {
-                 mMarker.setPosition(originLocation);
-             }
+            if (mMarker != null) {
+                mMarker.setPosition(originLocation);
+            }
         }
     }
 
@@ -440,32 +460,33 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
         ArrayList<HashMap<String, String>> result = new ArrayList<>();
         int latLngPlotSize = latLngPlot.size();
 
-        for (int i = 0; i < latLngPlot.size()-1; i++) {
+        for (int i = 0; i < latLngPlot.size() - 1; i++) {
             HashMap<String, String> resultHashMap = latLngPlot.get(i);
             String lng1 = resultHashMap.get("lng");
             String lat1 = resultHashMap.get("lat");
 
-            HashMap<String, String> resultHashMap2 = latLngPlot.get(i+1);
+            HashMap<String, String> resultHashMap2 = latLngPlot.get(i + 1);
             String lng2 = resultHashMap2.get("lng");
             String lat2 = resultHashMap2.get("lat");
             try {
 
-                String url2 = url + "originLat=" + lat1 + "&originLng=" + lng1 + "&destinationLat="+lat2 + "&destinationLng="+lng2;
+                String url2 = url + "originLat=" + lat1 + "&originLng=" + lng1 + "&destinationLat=" + lat2 + "&destinationLng=" + lng2;
                 String jsonString = handler.makeServiceCall(url2);
 
                 JSONObject jsonObj = new JSONObject(jsonString);
                 JSONObject candidates = jsonObj.getJSONObject("TravelObject");
 
-                latLngPlot.get(i).put("timeTravel",candidates.getString("travelTime"));
-                Log.d(TAG,"size : "+ latLngPlot.get(i).get("name")+ " "+ latLngPlot.get(i).get("timeTravel"));
+                latLngPlot.get(i).put("timeTravel", candidates.getString("travelTime"));
+                Log.d(TAG, "size : " + latLngPlot.get(i).get("name") + " " + latLngPlot.get(i).get("timeTravel"));
 
-                Log.d(TAG, "doInBackground: "+url2);
+                Log.d(TAG, "doInBackground: " + url2);
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
     }
+
     public void setRouteInfo(String name, String origin, String stringPlaceType) {
         originPlaceName.setText(origin);
         destinationPlaceName.setText(name);
@@ -480,41 +501,42 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
-    private class PolylineDraw extends AsyncTask<LatLng, Void, ArrayList<PolylineOptions>> {
+    private class PolylineDraw extends AsyncTask<LatLng, Void, PlacesNavi> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
         }
 
         @Override
-        protected ArrayList<PolylineOptions> doInBackground(LatLng... stgr) {
+        protected PlacesNavi doInBackground(LatLng... stgr) {
             ArrayList<PolylineOptions> polylineOptions = new ArrayList<>();
             DataParser parser = new DataParser();
 
             String origin = stgr[0].latitude + "," + stgr[0].longitude;
             String destination = stgr[1].latitude + "," + stgr[1].longitude;
 
-            Log.d(TAG, "polyline: " + parser.addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0"));
-            polylineOptions.add(parser.addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0"));
+            PlacesNavi placesNavi = parser.addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0");
 
-            return polylineOptions;
+            Log.d(TAG, "polyline: " + placesNavi);
+            polylineOptions.add(placesNavi.getPolylineOptions());
+            return placesNavi;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<PolylineOptions> result) {
+        protected void onPostExecute(PlacesNavi result) {
             super.onPostExecute(result);
 
-            Log.d(TAG, "naviline size: "+naviLine.size());
 
-            if(naviLine.size() != 0) {
-                for (int i = 0; i < result.size(); i++) {
-                    naviLine.get(i).remove();
-                }
+            placeDistance.setText(result.getDistance());
+            timeEstFinish.setText(result.getTime());
+
+            Log.d(TAG, "naviline size: " + naviLine.size());
+
+            if (naviLine.size() != 0) {
+                    naviLine.get(0).remove();
             }
 
-            for (int i = 0; i < result.size(); i++) {
-                naviLine.add(mMap.addPolyline(result.get(i)));
-            }
+            naviLine.add(mMap.addPolyline(result.getPolylineOptions()));
         }
     }
 

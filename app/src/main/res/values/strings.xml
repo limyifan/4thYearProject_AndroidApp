@@ -14,12 +14,16 @@
     <string name="pref_selection">What would you like to do? (Up to 3)</string>
     <string name="time_selection">Enter your available time (in hours)</string>
     <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
     <string name="dismiss_label">Dismiss</string>
     <string name="clear_all_label">Clear All</string>
     <string name="restart_trip_label">Restart Trip</string>
     <string name="hint_text">Time You Got</string>
     <string name="dialog_no_suggestion">Sorry, suggestion activity not found in this area</string>
+
+    <string name="restart_trip">Do you sure you want to restart the trip? </string>
 
     <string-array name="peferences_choice">
         <item>Food</item>
