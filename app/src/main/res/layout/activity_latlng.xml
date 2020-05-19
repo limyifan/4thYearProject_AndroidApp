@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:title="TripIT"
-        app:titleTextColor="#FFF" />
+        app:titleTextColor="?attr/colorPrimaryDark" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -53,44 +53,24 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
+                android:layout_marginLeft="1dp"
                 android:layout_marginRight="8dp"
+                android:gravity="center"
                 android:orientation="horizontal"
                 android:weightSum="5">
 
-                <SeekBar
-                    android:id="@+id/timeSeekbar"
-                    android:layout_width="300dp"
-                    android:layout_height="wrap_content"
+                <NumberPicker
+                    android:id="@+id/NumberPicker"
+                    android:layout_width="183dp"
+                    android:layout_height="112dp"
+                    android:layout_margin="20dp"
                     android:layout_weight="3"
-                    android:max="10" />
 
-                <TextView
-                    android:id="@+id/timeDisplay"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="0" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="hours" />
+                    android:max="10"
+                    android:theme="@style/NumberPickerTheme" />
 
             </LinearLayout>
-
-<!--            <TextView-->
-<!--                android:id="@+id/textView3"-->
-<!--                android:layout_width="316dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:text="       |       |       |       |       |       |       |       |       |       |       |       |" />-->
-
-<!--            <TextView-->
-<!--                android:id="@+id/textView4"-->
-<!--                android:layout_width="319dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:text="      0    1    2   3    4    5    6    7    8    9    10    11    12" />-->
 
         </LinearLayout>
 
@@ -110,15 +90,17 @@
             android:id="@+id/prefSelect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="?attr/colorPrimaryDark"
             android:layout_gravity="center"
             android:text="@string/pref_selection" />
 
         <Button
             android:id="@+id/goButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="333dp"
+            android:layout_height="51dp"
             android:layout_gravity="center"
-            android:text="Let's GO !!!" />
+            android:text="Let's GO !!!"
+            android:textColor="?attr/colorPrimaryDark" />
 
     </LinearLayout>
 

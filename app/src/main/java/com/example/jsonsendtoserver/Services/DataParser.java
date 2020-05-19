@@ -1,6 +1,10 @@
 package com.example.jsonsendtoserver.Services;
 
+import android.util.Log;
+
+import com.example.jsonsendtoserver.Model.PlacesNavi;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -10,7 +14,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
- public class DataParser {
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+
+public class DataParser {
     public List<List<HashMap<String,String>>> parse(JSONObject jObject){
         List<List<HashMap<String, String>>> routes = new ArrayList<>() ;
         JSONArray jRoutes;
@@ -47,6 +54,47 @@ import java.util.List;
         }
         return routes;
     }
+
+    public PlacesNavi parseFull(JSONObject jObject){
+        List<List<HashMap<String, String>>> routes = new ArrayList<>() ;
+        String distance = null,duration= null;
+        JSONArray jRoutes;
+        JSONArray jLegs;
+        JSONArray jSteps;
+        try {
+            jRoutes = jObject.getJSONArray("routes");
+/** Traversing all routes */
+            for(int i=0;i<jRoutes.length();i++){
+                jLegs = ( (JSONObject)jRoutes.get(i)).getJSONArray("legs");
+                 distance = jLegs.getJSONObject(0).getJSONObject("distance").getString("text");
+                 duration = jLegs.getJSONObject(0).getJSONObject("duration").getString("text");
+                List path = new ArrayList<>();
+/** Traversing all legs */
+                for(int j=0;j<jLegs.length();j++){
+                    jSteps = ( (JSONObject)jLegs.get(j)).getJSONArray("steps");
+/** Traversing all steps */
+                    for(int k=0;k<jSteps.length();k++){
+                        String polyline = "";
+                        polyline = (String)((JSONObject)((JSONObject)jSteps.get(k)).get("polyline")).get("points");
+                        List<LatLng> list = decodePoly(polyline);
+/** Traversing all points */
+                        for(int l=0;l<list.size();l++){
+                            HashMap<String, String> hm = new HashMap<>();
+                            hm.put("lat", Double.toString((list.get(l)).latitude) );
+                            hm.put("lng", Double.toString((list.get(l)).longitude) );
+                            path.add(hm);
+                        }
+                    }
+                    routes.add(path);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }catch (Exception e){
+        }
+        PlacesNavi placesNavi = new PlacesNavi(distance,duration,routes);
+        return placesNavi;
+    }
     /**
      * Method to decode polyline points
      * */
@@ -77,5 +125,61 @@ import java.util.List;
             poly.add(p);
         }
         return poly;
+    }
+
+    public PlacesNavi addPolyline(String url) {
+        try {
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            String data = client.newCall(request).execute().body().string();
+            return parserTaskToPolyLine(data);
+
+        } catch (Exception e) {
+            Log.e("Background Task", e.toString());
+        }
+        return null;
+    }
+
+    private PlacesNavi parserTaskToPolyLine(String jsonData) {
+        JSONObject jObject;
+        List<List<HashMap<String, String>>> routes = null;
+        PolylineOptions lineOptions = new PolylineOptions();
+        String distance = null, duration=null;
+
+        try {
+            jObject = new JSONObject(jsonData);
+            DataParser parser = new DataParser();
+
+            PlacesNavi placesNavi = parser.parseFull(jObject);
+            distance = placesNavi.getDistance();
+            duration = placesNavi.getTime();
+            routes = placesNavi.getNavilines();
+            //routes = parser.parse(jObject);
+
+            ArrayList<LatLng> points;
+            for (int i = 0; i < routes.size(); i++) {
+                points = new ArrayList<>();
+                List<HashMap<String, String>> path = routes.get(i);
+                for (int j = 0; j < path.size(); j++) {
+                    HashMap<String, String> point = path.get(j);
+                    double lat = Double.parseDouble(point.get("lat"));
+                    double lng = Double.parseDouble(point.get("lng"));
+                    LatLng position = new LatLng(lat, lng);
+                    points.add(position);
+                }
+                lineOptions.addAll(points);
+                lineOptions.width(10);
+            }
+        } catch (Exception e) {
+            Log.e("parserTaskToPolyLine", e.toString());
+            e.printStackTrace();
+        }
+
+        Log.d("onPostExecute", "lineOptions result zone: " + lineOptions.getPoints().toString());
+        PlacesNavi returnResult= new PlacesNavi(distance,duration,lineOptions);
+        return returnResult;
+
     }
 }

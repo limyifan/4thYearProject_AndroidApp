@@ -25,7 +25,6 @@ import androidx.appcompat.app.AppCompatActivity;
             super.onCreate(savedInstanceState);
             setContentView(R.layout.splash_screen);
 
-            final ProgressBar splash_content = (ProgressBar) findViewById(R.id.splashProgressBar);
             final TextView textView = findViewById(R.id.loading);
             final ImageView logo = findViewById(R.id.logo);
 
@@ -43,7 +42,6 @@ import androidx.appcompat.app.AppCompatActivity;
                 @Override
                 public void onAnimationEnd(Animation animation) {
                     textView.startAnimation(theRest);
-                    splash_content.setVisibility(View.VISIBLE);
 
                     new Handler().postDelayed(new Runnable() {
                         @Override

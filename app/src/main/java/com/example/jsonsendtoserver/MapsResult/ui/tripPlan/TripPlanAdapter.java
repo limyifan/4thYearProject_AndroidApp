@@ -49,18 +49,28 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         Log.d(TAG, "Adapter Run: "+ TAG);
         holder.placeName.setText(places.get(position).get("name"));
-        holder.ratingBar.setText(places.get(position).get("rating"));
-
+        Log.d(TAG, "Places element at "+position+"is "+places.get(position));
+        if (!places.get(position).get("rating").equals("No Rating")) {
+            holder.ratingBar.setText((places.get(position).get("rating")));
+        }
+        else {
+            holder.ratingBar.setVisibility(View.GONE);
+        }
         if (!places.get(position).get("img").contains("No Photos Provided")) {
             String img = places.get(position).get("img").replaceAll("\\\\", "");
             Glide.with(context).load(img).into(holder.coverImg);
         }
+    String txt1 = " Est Time: "+places.get(position).get("average_time")+" min";
+            holder.estimatedTime.setText(txt1);
+
+
 
         String txt = places.get(position).get("timeTravel")+" approx";
         holder.timeTravel.setText(txt);
         holder.placeCategory.setText(places.get(position).get("place_type"));
 
         Log.d(TAG,"size2 : "+ places.size()+ " "+ places.get(position).get("timeTravel"));
+
 
         if(position == places.size()-1 ) {
             holder.view1.setVisibility(View.GONE);
@@ -78,8 +88,9 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView placeName, timeTravel,ratingBar, placeCategory;
+        TextView placeName, timeTravel,ratingBar, placeCategory, estimatedTime;
         View view1,view2;
+       // RatingBar ratingBar;
         LinearLayout timeTaken;
         ImageView coverImg;
 
@@ -91,6 +102,7 @@ public class TripPlanAdapter extends RecyclerView.Adapter<TripPlanAdapter.ViewHo
             timeTaken = itemView.findViewById(R.id.timeTaken);
             ratingBar = itemView.findViewById(R.id.ratingBar);
             coverImg = itemView.findViewById(R.id.coverImg);
+            estimatedTime = itemView.findViewById(R.id.timeEstimated);
             timeTravel = itemView.findViewById(R.id.travelTime);
             placeCategory = itemView.findViewById(R.id.placeCategory);
             itemView.setOnClickListener(this);

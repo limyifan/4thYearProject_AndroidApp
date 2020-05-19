@@ -19,6 +19,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,8 +32,13 @@ import android.widget.EditText;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 
+import com.example.jsonsendtoserver.Navigation.NavigateActivity;
 import com.example.jsonsendtoserver.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MapsResultActivity extends AppCompatActivity {
 
@@ -45,17 +51,26 @@ public class MapsResultActivity extends AppCompatActivity {
         setContentView(R.layout.activity_maps_result);
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        Button beginButoon = findViewById(R.id.beginButton);
+        beginButoon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<HashMap<String, String>> latLngPlot = (ArrayList<HashMap<String, String>>) getIntent().getSerializableExtra("result");
+                Intent intent = new Intent(MapsResultActivity.this, NavigateActivity.class);
+                intent.putExtra("result2", (Serializable) latLngPlot);
+                startActivity(intent);
+
+            }
+        });
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_maps, R.id.navigation_trip)
                 .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+      NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+//       NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
     }
 }

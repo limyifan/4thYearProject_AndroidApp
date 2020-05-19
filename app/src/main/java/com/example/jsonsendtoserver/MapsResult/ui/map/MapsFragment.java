@@ -34,15 +34,18 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,16 +78,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     private static final int ALL_PERMISSIONS_RESULT = 1011;
     ArrayList<HashMap<String, String>> latLngPlot;
 
+    Boolean skipButtonClicked = false;
+    int skipButtonClickedCount = 0;
+    public FloatingActionButton skipButton;
     Boolean nextButtonClicked = false;
     int nextButtonClickedCount = 0;
     private ArrayList<LatLng> latLngs = new ArrayList<>();
     private EditText numBox;
-
+   // public View root;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         View root = inflater.inflate(R.layout.fragment_maps, container, false);
 
          SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
@@ -94,6 +101,39 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
              supportMapFragment = SupportMapFragment.newInstance();
              ft.replace(R.id.map,supportMapFragment).commit();
          }
+        FloatingActionButton skipButton = root.findViewById(R.id.floatingActionButton);
+       skipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                skipButtonClicked = true;
+
+                if (skipButtonClickedCount == latLngPlot.size()) {
+                    skipButtonClickedCount = 0;
+                }
+
+                Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
+                HashMap<String, String> resultHashMap = latLngPlot.get(skipButtonClickedCount);
+
+                String name = resultHashMap.get("name");
+                String lng = resultHashMap.get("lng");
+                String lat = resultHashMap.get("lat");
+                String countToString = resultHashMap.get("count");
+
+
+                Double latDouble = Double.parseDouble(lat);
+                Double lngDouble = Double.parseDouble(lng);
+                int count = Integer.parseInt(countToString);
+                LatLng location = new LatLng(latDouble, lngDouble);
+
+                mMap.addMarker(new MarkerOptions().position(location).title(name)).showInfoWindow();
+
+                skipButtonClickedCount++;
+                skipButtonClicked = true;
+
+                mMap.animateCamera((CameraUpdateFactory.newLatLng(location)));
+                Log.d(TAG, "Skip Button is onclick: "+name);
+            }
+        });
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -140,19 +180,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        Marker marker;
 
+        ArrayList<Marker> mMarkerArray = new ArrayList<>();
         Intent intent = getActivity().getIntent();
         Log.d("TAG", "NEW INTENT");
         latLngPlot = (ArrayList<HashMap<String, String>>) intent.getSerializableExtra("result");
         String log = latLngPlot.toString();
         Log.d("TAG", "LATLNGPLOT IS" + log);
 
-//        int length = latLngPlot.size() - 1 > 5 ? 5 : latLngPlot.size() - 1;
-//        for (int i = 0; i < length; i++) {
         for (int i = 0; i < latLngPlot.size(); i++) {
 
             HashMap<String, String> resultHashMap = latLngPlot.get(i);
 
+            String place_id = resultHashMap.get("place_id");
             String name = resultHashMap.get("name");
             String lng = resultHashMap.get("lng");
             String lat = resultHashMap.get("lat");
@@ -172,9 +213,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
                 mCurrLocationMarker = mMap.addMarker(markerOptions);
+                marker = mCurrLocationMarker;
+
             }
             else {
-                mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
+                marker = mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
+              //  mMarkerArray.add(marker);
             }
 
             if (count == 0) {
@@ -189,6 +233,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             mMap.setIndoorEnabled(true);
 
             latLngs.add(location);
+            mMarkerArray.add(marker);
 
         }
 
@@ -208,7 +253,31 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         });
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
-        new LoopMarker().execute();
+        //new LoopMarker().execute();
+
+        //fit all markers on zoom
+        LatLngBounds bounds = calculateBounds(mMarkerArray);
+        zoomToFit(bounds);
+    }
+
+    public void zoomToFit(LatLngBounds bound)
+    {
+        Log.d("ZOOMTOFIT", "inside zoom");
+        int padding = 0;
+       CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bound, padding);
+               mMap.animateCamera(cu);
+       // mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bound, 25), 1000, null);
+    }
+    public LatLngBounds calculateBounds(ArrayList<Marker> markers)
+    {
+        Log.d("ZOOMTOFIT", "inside calculate");
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (Marker marker : markers) {
+            builder.include(marker.getPosition());
+            Log.d("marker", "marker is: "+marker.getPosition());
+        }
+        LatLngBounds bounds = builder.build();
+        return bounds;
     }
 
     public void showAlertDialogButtonClicked() {
@@ -230,6 +299,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 Log.d("BUTTON CLICKED", nextButtonClickedCount + "times");
                 HashMap<String, String> resultHashMap = latLngPlot.get(nextButtonClickedCount);
 
+                String place_id = resultHashMap.get("place_id");
                 String name = resultHashMap.get("name");
                 String lng = resultHashMap.get("lng");
                 String lat = resultHashMap.get("lat");
@@ -382,101 +452,55 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                 break;
         }
     }
+//
+//    private class LoopMarker extends AsyncTask<Void, Void, ArrayList<PolylineOptions>> {
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//        }
+//
+//        @Override
+//        protected ArrayList<PolylineOptions> doInBackground(Void... stgr) {
+//            ArrayList<PolylineOptions> polylineOptions = new ArrayList<>();
+//            DataParser parser = new DataParser();
+//
+//            //int length = latLngs.size() - 1 > 5 ? 5 : latLngs.size() - 1;
+//            int length = latLngPlot.size()-1;
+//            for (int i = 0; i < length; i++) {
+//                String origin = latLngs.get(i).latitude + "," + latLngs.get(i).longitude;
+//                String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
+//                Log.d(TAG, "polyline: "+ "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0");
+//                if (i==0) {
+//                    polylineOptions.add(parser.addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
+//                }
+//                else {
+//                    polylineOptions.add(parser.addPolyline("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=walking&key=AIzaSyCCgD7_3jYnOb7sfejC0h79cUlzvVbWzy0").color(0xff3c62e8));
+//                 }
+//            }
+//            return polylineOptions;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(ArrayList<PolylineOptions> result) {
+//            super.onPostExecute(result);
+//
+//            if (result != null) {
+//                for (int i = 0; i < result.size(); i++) {
+//                    if(i!=0) {
+//                        result.get(i).color(Color.parseColor("#808080"));
+//                        if (i%2==0) {
+//                            result.get(i).color(Color.parseColor("#A9A9A9"));
+//                        }
+//                    }
+//                    else {
+//                        result.get(i).zIndex(1000);
+//                    }
+//                    mMap.addPolyline(result.get(i));
+//                }
+//            }
+//        }
+//    }
 
-    private class LoopMarker extends AsyncTask<Void, Void, ArrayList<PolylineOptions>> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
 
-        @Override
-        protected ArrayList<PolylineOptions> doInBackground(Void... stgr) {
-            ArrayList<PolylineOptions> polylineOptions = new ArrayList<>();
-
-            //int length = latLngs.size() - 1 > 5 ? 5 : latLngs.size() - 1;
-            int length = latLngPlot.size()-1;
-            for (int i = 0; i < length; i++) {
-                String origin = latLngs.get(i).latitude + "," + latLngs.get(i).longitude;
-                String destination = latLngs.get(i + 1).latitude + "," + latLngs.get(i + 1).longitude;
-                if (i==0) {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(0xff3c62e8));
-                }
-                else {
-                    polylineOptions.add(addMarker("https://maps.googleapis.com/maps/api/directions/json?origin=" + origin + "&destination=" + destination + "&avoid=highways&mode=bicycling&key=AIzaSyC-Qr_9Y10nFQMNzNtmOnuBf6QY3AuFCiw").color(0xff3c62e8));
-                 }
-            }
-            return polylineOptions;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<PolylineOptions> result) {
-            super.onPostExecute(result);
-
-            if (result != null) {
-                for (int i = 0; i < result.size(); i++) {
-                    if(i!=0) {
-                        result.get(i).color(Color.parseColor("#808080"));
-                        if (i%2==0) {
-                            result.get(i).color(Color.parseColor("#A9A9A9"));
-                        }
-                    }
-                    else {
-                        result.get(i).zIndex(1000);
-                    }
-                    mMap.addPolyline(result.get(i));
-                }
-            }
-        }
-    }
-
-    public PolylineOptions addMarker(String url) {
-        try {
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
-            String data = client.newCall(request).execute().body().string();
-            return parserTaskToPolyLine(data);
-
-        } catch (Exception e) {
-            Log.e("Background Task", e.toString());
-        }
-        return null;
-    }
-
-    private PolylineOptions parserTaskToPolyLine(String jsonData) {
-        JSONObject jObject;
-        List<List<HashMap<String, String>>> routes = null;
-        PolylineOptions lineOptions = new PolylineOptions();
-
-        try {
-            jObject = new JSONObject(jsonData);
-            DataParser parser = new DataParser();
-
-            routes = parser.parse(jObject);
-
-            ArrayList<LatLng> points;
-            for (int i = 0; i < routes.size(); i++) {
-                points = new ArrayList<>();
-                List<HashMap<String, String>> path = routes.get(i);
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-                    points.add(position);
-                }
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-            }
-        } catch (Exception e) {
-            Log.e("parserTaskToPolyLine", e.toString());
-            e.printStackTrace();
-        }
-
-        Log.d("onPostExecute", "lineOptions result zone: " + lineOptions.getPoints().toString());
-        return lineOptions;
-
-    }
 }
 

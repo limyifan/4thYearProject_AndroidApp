@@ -26,6 +26,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.NumberPicker;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,14 +55,15 @@ import com.google.android.material.chip.ChipGroup;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
-public class UserPrefActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
+public class UserPrefActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, NumberPicker.OnValueChangeListener,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private String TAG = UserPrefActivity.class.getSimpleName();
     NetworkCall networkCall;
-    private static String url = "https://201.team/api/randomroute/getroute.php/";
+    private static String url = "https://201.team/api/v3/GetRoute.php/";
     private ProgressDialog pDialog;
     public Location location;
     private GoogleApiClient googleApiClient;
+    String place_id;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private LocationRequest locationRequest;
     private static final long UPDATE_INTERVAL = 5000, FASTEST_INTERVAL = 5000; // = 5 seconds
@@ -72,7 +74,8 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
     // integer for permissions results request
     private static final int ALL_PERMISSIONS_RESULT = 1011;
 
-    private String latitude, longitude, time;
+    private String latitude, longitude;
+    int time;
     private ArrayList<String> pref = new ArrayList<>();
     String[] listItems;
     boolean[] checkedItems;
@@ -89,14 +92,23 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
         networkCall = new NetworkCall();
 
         final ChipGroup prefSelectList = findViewById(R.id.tvItemSelected);
-        SeekBar seekBar = findViewById(R.id.timeSeekbar);
+        NumberPicker seekBar = findViewById(R.id.NumberPicker);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
-        final TextView textView = findViewById(R.id.timeDisplay);
+        //final TextView textView = findViewById(R.id.timeDisplay);
 
+        seekBar.setMinValue(0);
+        seekBar.setMaxValue(10);
+
+        seekBar.setFormatter(new NumberPicker.Formatter() {
+            @Override
+            public String format(int value) {
+                return String.format("%02d", value);
+            }
+        });
         setSupportActionBar(myToolbar);
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int progress = 0;
+        seekBar.setOnValueChangedListener(this);
+            /*int progress = 0;
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progresValue, boolean fromUser) {
@@ -113,9 +125,9 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 textView.setText(String.valueOf(progress));
-                time = String.valueOf(progress);
+                time = String.valueOf(progress * 60);
             }
-        });
+        });*/
 
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -173,7 +185,6 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                         }
                     }
                 });
-
                 mBuilder.setCancelable(false);
                 mBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
@@ -210,8 +221,19 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     }
                 });
 
-                AlertDialog mDialog = mBuilder.create();
+                final AlertDialog mDialog = mBuilder.create();
+
+                mDialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface arg0) {
+                        mDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                        mDialog.getButton(DialogInterface.BUTTON_NEUTRAL).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                        mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    }
+                });
+
                 mDialog.show();
+
             }
         });
 
@@ -226,6 +248,11 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
             }
 
         });
+    }
+
+    @Override
+    public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+        time = picker.getValue() * 60;
     }
 
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {
@@ -394,6 +421,9 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
         ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, 1);
     }
 
+
+
+
     protected class ParseJSON extends AsyncTask<Void, Void, ArrayList<HashMap<String, String>>> {
 
         private Context mContext;
@@ -423,10 +453,14 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                 for (int i = 0; i < pref.size(); i++) {
                     int j = 1 + i;
                     prefString += "&pref" + j + "=" + pref.get(i);
-                    jsonString = handler.makeServiceCall(url + "?lat=" + latitude + "&lng=" + longitude+"&time="+time + prefString);
-                    Log.d(TAG, "Response from url: " + url + "?lat=" + latitude + "&lng=" + longitude+"&time="+time  + prefString);
+
                 }
+//                latitude = "54.009";
+//                longitude = "-6.4049";
+                jsonString = handler.makeServiceCall(url + "?lat=" + latitude + "&lng=" + longitude+ prefString +"&time="+time);
+                Log.d(TAG, "Response from url: " + url + "?lat=" + latitude + "&lng=" + longitude  + prefString + "&time="+time);
             }
+
 
             if (jsonString != null) {
                 try {
@@ -436,6 +470,7 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
 
                     HashMap<String, String> current = new HashMap<>();
 
+                   // current.put("place_id", place_id);
                     current.put("name", "Current Location");
                     current.put("lat", latitude);
                     current.put("lng", longitude);
@@ -443,31 +478,38 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
                     current.put("rating", "No Rating");
                     current.put("place_type","");
                     current.put("img", "No Photos Provided");
+                    current.put("average_time", "N/A");
 
                     resultNew.add(current);
 
                     for (int i = 0; i < candidates.length(); i++) {
-                        HashMap<String, String> candidate = new HashMap<>();
+                        //if(i%2 == 0) {
+                            HashMap<String, String> candidate = new HashMap<>();
 
-                        JSONObject c = candidates.getJSONObject(i);
-                        String lat = c.getString("latitude");
-                        String lng = c.getString("longitude");
-                        String name = c.getString("place_name");
-                        String img = c.getString("cover_image");
-                        String rating = c.getString("rating");
-                        String placeType = c.getString("place_type");
-                        String countToString = Integer.toString(count);
+                            JSONObject c = candidates.getJSONObject(i);
+                            String place_id = c.getString("place_id");
+                            String lat = c.getString("latitude");
+                            String lng = c.getString("longitude");
+                            String name = c.getString("place_name");
+                            String img = c.getString("cover_image");
+                            String rating = c.getString("rating");
+                            String placeType = c.getString("place_type");
+                            String average_time = c.getString("average_time");
+                            String countToString = Integer.toString(count);
 
-                        candidate.put("name", name);
-                        candidate.put("lat", lat);
-                        candidate.put("lng", lng);
-                        candidate.put("img", img);
-                        candidate.put("rating", rating);
-                        candidate.put("place_type",placeType);
-                        candidate.put("count", countToString);
-                        count++;
-
-                        resultNew.add(candidate);
+                            candidate.put("place_id", place_id);
+                            candidate.put("name", name);
+                            candidate.put("lat", lat);
+                            candidate.put("lng", lng);
+                            candidate.put("img", img);
+                            candidate.put("rating", rating);
+                            candidate.put("place_type", placeType);
+                            candidate.put("count", countToString);
+                            candidate.put("average_time", average_time);
+                            count++;
+                            Log.d(TAG, "Place id is: " + place_id);
+                            resultNew.add(candidate);
+                        //}
                     }
                 } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
@@ -495,12 +537,33 @@ public class UserPrefActivity extends AppCompatActivity implements GoogleApiClie
             if (pDialog.isShowing())
                 pDialog.dismiss();
 
-            Toast.makeText(UserPrefActivity.this, "Data Passed", Toast.LENGTH_LONG).show();
+            if (resultNew.size()<=1) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(UserPrefActivity.this);
+                builder.setMessage(R.string.dialog_no_suggestion)
+                        .setNegativeButton(R.string.dismiss_label, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.dismiss();
+                            }
+                        });
+                final AlertDialog dialog = builder.create();
 
-            Intent intent = new Intent(mContext, MapsResultActivity.class);
-            intent.putExtra("result", (Serializable) resultNew);
-            Log.d("TAG", "RESULT IS" + resultNew.toString());
-            startActivity(intent);
+                dialog.setOnShowListener( new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface arg0) {
+                        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    }
+                });
+
+                dialog.show();
+            }else {
+
+                Toast.makeText(UserPrefActivity.this, "Data Passed", Toast.LENGTH_LONG).show();
+
+                Intent intent = new Intent(mContext, MapsResultActivity.class);
+                intent.putExtra("result", (Serializable) resultNew);
+                Log.d("TAG", "RESULT IS" + resultNew.toString());
+                startActivity(intent);
+            }
         }
     }
 

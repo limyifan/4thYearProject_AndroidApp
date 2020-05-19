@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/background"
+    android:background="@color/Yellow"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -18,23 +18,17 @@
             android:layout_width="240dp"
             android:layout_height="240dp"
             android:layout_gravity="center"
-            android:src="@drawable/tripit_logo"/>
-
-        <ProgressBar
-            android:id="@+id/splashProgressBar"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_gravity="center_horizontal"
-            android:visibility="invisible" />
+            android:src="@drawable/logo2"/>
 
         <TextView
             android:id="@+id/loading"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="25dp"
+            android:textSize="35dp"
+            android:textColor="@color/Black"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:text="@string/loading"
+            android:text="@string/loadingText"
             android:visibility="invisible"/>
 
     </LinearLayout>
