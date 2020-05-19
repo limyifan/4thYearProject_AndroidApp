@@ -193,7 +193,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
             HashMap<String, String> resultHashMap = latLngPlot.get(i);
 
-            String place_id = resultHashMap.get("place_id");
+            String place_type = resultHashMap.get("place_type");
             String name = resultHashMap.get("name");
             String lng = resultHashMap.get("lng");
             String lat = resultHashMap.get("lat");
@@ -217,7 +217,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
             }
             else {
-                marker = mMap.addMarker(new MarkerOptions().position(location).title("Marker in " + name));
+                marker = mMap.addMarker(new MarkerOptions().position(location).title(name));
               //  mMarkerArray.add(marker);
             }
 
