@@ -87,7 +87,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
 
     Boolean skipButtonClicked = false, nextButtonClicked = false;
-    int skipButtonClickedCount = 2, nextButtonClickedCount = 0, PERMISSION_ID = 44;
+    int skipButtonClickedCount = 1, nextButtonClickedCount = 0, PERMISSION_ID = 44;
     FusedLocationProviderClient mFusedLocationClient;
     private LatLng originLocation;
     private GoogleApiClient googleApiClient;
@@ -152,13 +152,12 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
                 LatLng location;
                 HashMap<String, String> resultHashMap;
                 int latLngPlotSize = latLngPlot.size();
-                if (skipButtonClickedCount == latLngPlotSize - 1) {
+                if (skipButtonClickedCount == latLngPlotSize) {
                     skipButtonClickedCount = 0;
                 }
 
                 Log.d("BUTTON CLICKED", skipButtonClickedCount + "times");
 
-                skipButtonClickedCount++;
                 resultHashMap = latLngPlot.get(skipButtonClickedCount);
 
                 name = resultHashMap.get("name");
@@ -196,6 +195,7 @@ public class NavigateActivity extends AppCompatActivity implements OnMapReadyCal
 
                     new PolylineDraw().execute(originLocation, location);
                 }
+                skipButtonClickedCount++;
 
 
             }
